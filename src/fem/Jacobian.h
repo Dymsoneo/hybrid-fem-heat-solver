@@ -31,16 +31,10 @@ public:
     Jacobian() = default;
     
     //Builds Jacobian for a given element and Gauss integration point.
-    Jacobian(const Element& element,
-        const Mesh& mesh,
-        const UniversalElement& ue,
-        int integrationPointIndex);
+    Jacobian(const Element& element, const Mesh& mesh, const UniversalElement& ue, int integrationPointIndex);
 
 private:
-    void computeJacobianMatrix(const Element& element,
-        const Mesh& mesh,
-        const UniversalElement& ue,
-        int integrationPointIndex);
+    void computeJacobianMatrix(const Element& element, const Mesh& mesh, const UniversalElement& ue, int integrationPointIndex);
 
     void computeInverse();
     void computeGlobalDerivatives(const UniversalElement& ue, int integrationPointIndex);
