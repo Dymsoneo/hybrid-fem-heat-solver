@@ -13,13 +13,13 @@ public:
     std::array<int, 4> nodeIds{};
 
     Matrix4 H{};
+    Matrix4 Hbc{};
     Matrix4 C{};
     Vector4 P{};
 
     Element() = default;
 
-    Element(int id, const std::array<int, 4>& nodeIds)
-        : id(id), nodeIds(nodeIds)
+    Element(int id, const std::array<int, 4>& nodeIds): id(id), nodeIds(nodeIds)
     {
     }
 };
