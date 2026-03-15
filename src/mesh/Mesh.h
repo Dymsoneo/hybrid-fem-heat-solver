@@ -1,9 +1,11 @@
 #pragma once
 
 #include <vector>
+
 #include "Element.h"
 #include "Node.h"
 
+// Representation of a mesh consisting of nodes and elements
 class Mesh {
 public:
     std::vector<Node> nodes;
