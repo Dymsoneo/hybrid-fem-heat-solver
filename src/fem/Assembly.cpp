@@ -1,32 +1,34 @@
 #include "Assembly.h"
 
-Assembly::GlobalMatrix Assembly::assembleH(const Mesh& mesh, const UniversalElement& ue, double conductivity)
+Assembly::AssemblyResult Assembly::assembleSystem(const Mesh& mesh, const UniversalElement& ue, double conductivity, double density, double specificHeat, double alpha, double ambientTemperature)
 {
-    GlobalMatrix Hglobal(mesh.nodesCount, std::vector<double>(mesh.nodesCount, 0.0));
+    AssemblyResult result;
+
+    int n = mesh.nodesCount;
+
+    result.H = GlobalMatrix(n, std::vector<double>(n, 0.0));
+    result.Hbc = GlobalMatrix(n, std::vector<double>(n, 0.0));
+    result.C = GlobalMatrix(n, std::vector<double>(n, 0.0));
+    result.P = GlobalVector(n, 0.0);
 
     for (const auto& element : mesh.elements)
     {
         Element::Matrix4 Hlocal = ElementMatrices::computeH(element, mesh, ue, conductivity);
-
-        addLocalMatrixToGlobal(Hglobal, element, Hlocal);
-    }
-
-    return Hglobal;
-}
-
-Assembly::GlobalMatrix Assembly::assembleC(const Mesh& mesh, const UniversalElement& ue, double density, double specificHeat)
-{
-    GlobalMatrix Cglobal(mesh.nodesCount, std::vector<double>(mesh.nodesCount, 0.0));
-
-    for (const auto& element : mesh.elements)
-    {
+        Element::Matrix4 Hbclocal = ElementMatrices::computeHbc(element, mesh, ue, alpha);
         Element::Matrix4 Clocal = ElementMatrices::computeC(element, mesh, ue, density, specificHeat);
 
-        addLocalMatrixToGlobal(Cglobal, element, Clocal);
+        Element::Vector4 Plocal = ElementMatrices::computeP(element, mesh, ue, alpha, ambientTemperature);
+
+        addLocalMatrixToGlobal(result.H, element, Hlocal);
+        addLocalMatrixToGlobal(result.Hbc, element, Hbclocal);
+        addLocalMatrixToGlobal(result.C, element, Clocal);
+
+        addLocalVectorToGlobal(result.P, element, Plocal);
     }
 
-    return Cglobal;
+    return result;
 }
+
 
 void Assembly::addLocalMatrixToGlobal(GlobalMatrix& globalMatrix, const Element& element, const Element::Matrix4& localMatrix)
 {
@@ -39,5 +41,14 @@ void Assembly::addLocalMatrixToGlobal(GlobalMatrix& globalMatrix, const Element&
             int globalJ = element.nodeIds[j];
             globalMatrix[globalI][globalJ] += localMatrix[i][j];
         }
+    }
+}
+
+void Assembly::addLocalVectorToGlobal(GlobalVector& globalVector, const Element& element, const Element::Vector4& localVector)
+{
+    for (int i = 0; i < 4; i++)
+    {
+        int globalI = element.nodeIds[i];
+        globalVector[globalI] += localVector[i];
     }
 }

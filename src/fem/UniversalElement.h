@@ -39,7 +39,6 @@ public:
 
     // 2x2 Gauss integration points for 2D element
     std::array<IntegrationPoint2D, integrationPoints2D> gaussPoints2D;
-    std::array<IntegrationPoint2D, integrationPoints2D> gaussPoints2D;
 
     std::array<IntegrationPoint1D, integrationPoints1D> gaussPoints1D;
 

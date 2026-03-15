@@ -19,7 +19,23 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\fem\Assembly.cpp" />
+    <ClCompile Include="src\fem\ElementMatrices.cpp" />
+    <ClCompile Include="src\fem\Jacobian.cpp" />
+    <ClCompile Include="src\fem\UniversalElement.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\mesh\Mesh.cpp" />
+    <ClCompile Include="src\mesh\MeshGenerator.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\fem\Assembly.h" />
+    <ClInclude Include="src\fem\ElementMatrices.h" />
+    <ClInclude Include="src\fem\Jacobian.h" />
+    <ClInclude Include="src\fem\UniversalElement.h" />
+    <ClInclude Include="src\mesh\Element.h" />
+    <ClInclude Include="src\mesh\Mesh.h" />
+    <ClInclude Include="src\mesh\MeshGenerator.h" />
+    <ClInclude Include="src\mesh\Node.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

@@ -23,13 +23,29 @@ The solver is validated using both numerical benchmarks and experimental measure
 
 ---
 
+# Physical Model
+
+The solver models transient heat conduction in an axisymmetric domain using the equation:
+
+ρc ∂T/∂t = ∇ · (k ∇T)
+
+where:
+
+- T – temperature
+- ρ – material density
+- c – specific heat
+- k – thermal conductivity
+
+Boundary conditions include convection heat transfer with ambient temperature.
+
 # Features
 
 - transient heat conduction solver
+- axisymmetric FEM formulation
+- structured mesh generator
 - temperature dependent material properties `k(T)` and `c(T)`
 - nonlinear solver using **Picard iteration**
-- convection and contact boundary conditions
-- axisymmetric FEM formulation
+- convection boundary conditions
 - integration with **Arduino temperature measurements**
 - two simulation modes:
   - Accurate (offline)
@@ -58,6 +74,31 @@ hybrid-fem-heat-solver/
 ├── validation/ → solver verification cases
 ├── results/ → simulation results and plots
 ```
+
+# Current Solver Architecture
+
+The solver currently consists of the following core modules:
+
+- **Mesh**
+  - Node
+  - Element
+  - Mesh container
+  - Structured mesh generator
+
+- **FEM Core**
+  - Universal element definition
+  - Gauss integration scheme
+  - Jacobian transformation
+  - Local element matrices
+
+- **Boundary Conditions**
+  - Convection boundary matrix (Hbc)
+  - Load vector (P)
+
+- **Assembly**
+  - Global matrix assembly for H, C and boundary contributions
+
+Further development will include the transient time solver and integration with real measurement data.
 
 # Experimental Validation
 
@@ -90,4 +131,10 @@ Steps:
 ## Project Status
 
 Current milestone:
-Mesh structures and FEM element implementation
+- mesh structures (Node, Element, Mesh)
+- structured axisymmetric mesh egenerator
+- universal finite element (shape functions and Gauss integration)
+- Jacobian computation
+- local element matrices (H,C)
+- convection boundary contributions (Hbc, P)
+- global matrix assembly
