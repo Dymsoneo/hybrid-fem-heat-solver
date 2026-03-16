@@ -1,11 +1,13 @@
 #include <iostream>
+
 #include "mesh/MeshGenerator.h"
 #include "fem/UniversalElement.h"
 #include "fem/Assembly.h"
+#include "solver/TimerIntegrator.h"
 
 int main()
 {
-    Mesh mesh = MeshGenerator::generateCylinderMesh(0.02, 0.05, 2, 2);
+    Mesh mesh = MeshGenerator::generateCylinderMesh(0.02, 0.05, 5, 5);
     UniversalElement ue;
 
     double conductivity = 150.0;
@@ -13,6 +15,7 @@ int main()
     double specificHeat = 1000.0;
     double alpha = 25.0;
     double ambientTemperature = 400.0;
+    double dt = 1.0;
 
     auto system = Assembly::assembleSystem(
         mesh,
@@ -24,17 +27,16 @@ int main()
         ambientTemperature
     );
 
-    std::cout << "Global H size: " << system.H.size() << " x " << system.H[0].size() << '\n';
-    std::cout << "Global C size: " << system.C.size() << " x " << system.C[0].size() << '\n';
-    std::cout << "Global Hbc size: " << system.Hbc.size() << " x " << system.Hbc[0].size() << '\n';
-    std::cout << "Global P size: " << system.P.size() << '\n';
+    std::vector<double> T(mesh.nodesCount, 20.0);
 
-    std::cout << "\nFirst row of global P:\n";
-    for (double value : system.P)
+    auto Tnext = TimeIntegrator::step(system, T, dt);
+
+    std::cout << "Temps after one time step:\n";
+    int i = 1;
+    for (double t : Tnext)
     {
-        std::cout << value << " ";
+        std::cout << "Node:\t" << i++ << "\t" << t << "\n";
     }
-    std::cout << '\n';
 
     return 0;
 }
