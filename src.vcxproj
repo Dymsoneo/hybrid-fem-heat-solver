@@ -27,6 +27,7 @@
     <ClCompile Include="src\mesh\Mesh.cpp" />
     <ClCompile Include="src\mesh\MeshGenerator.cpp" />
     <ClCompile Include="src\solver\LinearSolver.cpp" />
+    <ClCompile Include="src\solver\SimulationRunner.cpp" />
     <ClCompile Include="src\solver\TimerIntegrator.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -39,6 +40,7 @@
     <ClInclude Include="src\mesh\MeshGenerator.h" />
     <ClInclude Include="src\mesh\Node.h" />
     <ClInclude Include="src\solver\LinearSolver.h" />
+    <ClInclude Include="src\solver\SimulationRunner.h" />
     <ClInclude Include="src\solver\TimerIntegrator.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -52,26 +54,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
