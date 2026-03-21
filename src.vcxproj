@@ -23,6 +23,7 @@
     <ClCompile Include="src\fem\ElementMatrices.cpp" />
     <ClCompile Include="src\fem\Jacobian.cpp" />
     <ClCompile Include="src\fem\UniversalElement.cpp" />
+    <ClCompile Include="src\io\ResultExporter.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\mesh\Mesh.cpp" />
     <ClCompile Include="src\mesh\MeshGenerator.cpp" />
@@ -35,6 +36,7 @@
     <ClInclude Include="src\fem\ElementMatrices.h" />
     <ClInclude Include="src\fem\Jacobian.h" />
     <ClInclude Include="src\fem\UniversalElement.h" />
+    <ClInclude Include="src\io\ResultExporter.h" />
     <ClInclude Include="src\mesh\Element.h" />
     <ClInclude Include="src\mesh\Mesh.h" />
     <ClInclude Include="src\mesh\MeshGenerator.h" />

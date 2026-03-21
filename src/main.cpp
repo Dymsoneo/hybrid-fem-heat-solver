@@ -3,8 +3,8 @@
 #include "mesh/MeshGenerator.h"
 #include "fem/UniversalElement.h"
 #include "fem/Assembly.h"
-#include "solver/TimerIntegrator.h"
 #include "solver/SimulationRunner.h"
+#include "io/ResultExporter.h"
 
 int main()
 {
@@ -45,6 +45,10 @@ int main()
 
 		std::cout << "Time: " << result.timePoints[step] << ", Min Temp: " << minTemp << ", Max Temp: " << maxTemp << "\n";
     }
+
+	ResultExporter::exportTemperatureHistory(result, "results/simulation_data/temperature_history.csv");
+
+	ResultExporter::exportSummary(result, "results/simulation_data/summary.csv", 0);
 
     return 0;
 }
