@@ -92,6 +92,8 @@ The comparison is shown in the figure below:
 | Max error    | 0.005 °C    |
 | Mean error   | 0.002 °C    |
 
+![Error Plot](error_plot.png)
+
 ---
 
 ## Discussion
