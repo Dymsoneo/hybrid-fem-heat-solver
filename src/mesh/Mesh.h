@@ -19,5 +19,7 @@ public:
     void addNode(const Node& node);
     void addElement(const Element& element);
 
+    int findClosestNode(double r, double z);
+
     void clear();
 };

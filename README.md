@@ -50,6 +50,7 @@ Boundary conditions include convection heat transfer with ambient temperature.
 - two simulation modes:
   - Accurate (offline)
   - Realtime (optimized)
+- validated against SolidWorks Simulation
 
 ---
 
@@ -98,7 +99,12 @@ The solver currently consists of the following core modules:
 - **Assembly**
   - Global matrix assembly for H, C and boundary contributions
 
-Further development will include the transient time solver and integration with real measurement data.
+The solver currently supports transient heat conduction and has been validated against a commercial FEM tool.
+
+Further development will include:
+- nonlinear material models (k(T), c(T))
+- realtime simulation mode
+- integration with experimental data acquisition
 
 # Experimental Validation
 
@@ -131,10 +137,7 @@ Steps:
 ## Project Status
 
 Current milestone:
-- mesh structures (Node, Element, Mesh)
-- structured axisymmetric mesh egenerator
-- universal finite element (shape functions and Gauss integration)
-- Jacobian computation
-- local element matrices (H,C)
-- convection boundary contributions (Hbc, P)
-- global matrix assembly
+- nonlinear material model: `k(T)`, `c(T)`
+- implementation of Picard iteration
+- development of realtime simulation mode
+- integration with Arduino measurement system

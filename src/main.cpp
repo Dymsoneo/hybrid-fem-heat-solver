@@ -8,17 +8,19 @@
 
 int main()
 {
-    Mesh mesh = MeshGenerator::generateCylinderMesh(0.02, 0.05, 10, 10);
+    Mesh mesh = MeshGenerator::generateCylinderMesh(0.02, 0.05, 20, 40);
     UniversalElement ue;
 
-    double conductivity = 150.0;
-    double density = 1800.0;
+	int centerNode = mesh.findClosestNode(0.0, 0.025);
+    
+    double conductivity = 160.0;
+    double density = 1700.0;
     double specificHeat = 1000.0;
     double alpha = 25.0;
     double ambientTemperature = 400.0;
-    double dt = 10;
+    double dt = 5;
 
-	double totalTime = 4500;
+	double totalTime = 500;
 
     auto system = Assembly::assembleSystem(
         mesh,
@@ -48,7 +50,7 @@ int main()
 
 	ResultExporter::exportTemperatureHistory(result, "results/simulation_data/temperature_history.csv");
 
-	ResultExporter::exportSummary(result, "results/simulation_data/summary.csv", 0);
+	ResultExporter::exportSummary(result, "results/simulation_data/summary.csv", centerNode);
 
     return 0;
 }
