@@ -25,6 +25,7 @@
     <ClCompile Include="src\fem\UniversalElement.cpp" />
     <ClCompile Include="src\io\ResultExporter.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\material\MaterialModel.cpp" />
     <ClCompile Include="src\mesh\Mesh.cpp" />
     <ClCompile Include="src\mesh\MeshGenerator.cpp" />
     <ClCompile Include="src\solver\LinearSolver.cpp" />
@@ -37,6 +38,7 @@
     <ClInclude Include="src\fem\Jacobian.h" />
     <ClInclude Include="src\fem\UniversalElement.h" />
     <ClInclude Include="src\io\ResultExporter.h" />
+    <ClInclude Include="src\material\MaterialModel.h" />
     <ClInclude Include="src\mesh\Element.h" />
     <ClInclude Include="src\mesh\Mesh.h" />
     <ClInclude Include="src\mesh\MeshGenerator.h" />

@@ -5,52 +5,19 @@
 #include "fem/Assembly.h"
 #include "solver/SimulationRunner.h"
 #include "io/ResultExporter.h"
+#include "material/MaterialModel.h"
 
 int main()
 {
-    Mesh mesh = MeshGenerator::generateCylinderMesh(0.02, 0.05, 20, 40);
-    UniversalElement ue;
+   
+	MaterialModel material(7800.0, { 20.0, 100.0, 200.0 }, { 50.0, 45.0, 40.0 }, { 500.0, 480.0, 460.0 });
 
-	int centerNode = mesh.findClosestNode(0.0, 0.025);
-    
-    double conductivity = 160.0;
-    double density = 1700.0;
-    double specificHeat = 1000.0;
-    double alpha = 25.0;
-    double ambientTemperature = 400.0;
-    double dt = 5;
+	double T = 150.0; 
 
-	double totalTime = 500;
-
-    auto system = Assembly::assembleSystem(
-        mesh,
-        ue,
-        conductivity,
-        density,
-        specificHeat,
-        alpha,
-        ambientTemperature
-    );
-
-    std::vector<double> T(mesh.nodesCount, 20.0);
-
-	auto result = SimulationRunner::runSimulation(system, T, dt, totalTime);
-
-	std::cout << "Transient simulation results:\n\n";
-
-    for (size_t step = 0; step < result.temperatureHistory.size(); step++)
-    {
-		const auto& temperatures = result.temperatureHistory[step];
-
-		double minTemp = *std::min_element(temperatures.begin(), temperatures.end());
-		double maxTemp = *std::max_element(temperatures.begin(), temperatures.end());
-
-		std::cout << "Time: " << result.timePoints[step] << ", Min Temp: " << minTemp << ", Max Temp: " << maxTemp << "\n";
-    }
-
-	ResultExporter::exportTemperatureHistory(result, "results/simulation_data/temperature_history.csv");
-
-	ResultExporter::exportSummary(result, "results/simulation_data/summary.csv", centerNode);
+	std::cout << "Temperature: " << T << "C\n";
+	std::cout << "Density: " << material.getDensity() << " kg/m^3\n";
+	std::cout << "k(T): " << material.getConductivity(T) << " W/mK\n";
+	std::cout << "c(T): " << material.getSpecificHeat(T) << " J/kgK\n";
 
     return 0;
 }
