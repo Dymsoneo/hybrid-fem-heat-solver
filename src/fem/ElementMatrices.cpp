@@ -1,4 +1,5 @@
 #include "ElementMatrices.h"
+#include "Jacobian.h"
 
 double ElementMatrices::computeRadiusAtGaussPoint(const Element& element, const Mesh& mesh, const UniversalElement& ue, int integrationPointIndex)
 {
@@ -107,6 +108,19 @@ double ElementMatrices::computeRadiusAtEdgeGaussPoint(const Element& element, co
     }
 
     return r;
+}
+
+double ElementMatrices::computeTemperatureAtGaussPoint(const Element& element, const UniversalElement& ue, const std::vector<double>& nodalTemperatures, int integrationPointIndex)
+{
+	double temperature = 0.0;
+
+	for (int i = 0; i < UniversalElement::nodesCount; i++)
+    {
+		int globalNodeId = element.nodeIds[i];
+		temperature += ue.NValues[integrationPointIndex][i] * nodalTemperatures[globalNodeId];
+    }
+
+	return temperature;
 }
 
 Element::Matrix4 ElementMatrices::computeH(const Element& element, const Mesh& mesh, const UniversalElement& ue, double conductivity)
@@ -220,4 +234,66 @@ Element::Vector4 ElementMatrices::computeP(const Element& element, const Mesh& m
     }
 
     return P;
+}
+
+Element::Matrix4 ElementMatrices::computeHWithMaterialModel(const Element& element, const Mesh& mesh, const UniversalElement& ue, const MaterialModel& material, const std::vector<double>& nodalTemeratures)
+{
+	Element::Matrix4 H{};
+
+    for (int p = 0; p < UniversalElement::integrationPoints2D; p++)
+    {
+        Jacobian jac(element, mesh, ue, p);
+
+		double r_gp = computeRadiusAtGaussPoint(element, mesh, ue, p);
+
+		double T_gp = computeTemperatureAtGaussPoint(element, ue, nodalTemeratures, p);
+
+		double conductivity = material.getConductivity(T_gp);
+
+		double weight = ue.gaussPoints2D[p].weight;
+
+		double integrationFactor = 2.0 * PI * r_gp * jac.detJ * weight;
+
+        for (int i = 0; i < UniversalElement::nodesCount; i++)
+        {
+            for (int j = 0; j < UniversalElement::nodesCount; j++)
+            {
+				H[i][j] += conductivity * (jac.dNdR[i] * jac.dNdR[j] + jac.dNdZ[i] * jac.dNdZ[j]) * integrationFactor;
+            }
+        }
+    }
+
+    return H;
+}
+
+Element::Matrix4 ElementMatrices::computeCWithMaterialModel(const Element& element, const Mesh& mesh, const UniversalElement& ue, const MaterialModel& material, const std::vector<double>& nodalTemeratures)
+{
+	Element::Matrix4 C{};
+
+    for (int p = 0; p < UniversalElement::integrationPoints2D; p++)
+    {
+        Jacobian jac(element, mesh, ue, p);
+
+        double r_gp = computeRadiusAtGaussPoint(element, mesh, ue, p);
+
+        double T_gp = computeTemperatureAtGaussPoint(element, ue, nodalTemeratures, p);
+
+        double density = material.getDensity();
+
+        double specificHeat = material.getSpecificHeat(T_gp);
+
+        double weight = ue.gaussPoints2D[p].weight;
+
+        double integrationFactor = 2.0 * PI * r_gp * jac.detJ * weight;
+
+        for (int i = 0; i < UniversalElement::nodesCount; i++)
+        {
+            for (int j = 0; j < UniversalElement::nodesCount; j++)
+            {
+                C[i][j] += density * specificHeat * ue.NValues[p][i] * ue.NValues[p][j] * integrationFactor;
+            }
+        }
+    }
+
+	return C;
 }

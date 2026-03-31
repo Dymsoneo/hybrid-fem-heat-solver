@@ -10,14 +10,21 @@
 int main()
 {
    
-	MaterialModel material(7800.0, { 20.0, 100.0, 200.0 }, { 50.0, 45.0, 40.0 }, { 500.0, 480.0, 460.0 });
+	Mesh mesh = MeshGenerator::generateCylinderMesh(0.02, 0.05, 5, 5);
 
-	double T = 150.0; 
+	UniversalElement ue;
 
-	std::cout << "Temperature: " << T << "C\n";
-	std::cout << "Density: " << material.getDensity() << " kg/m^3\n";
-	std::cout << "k(T): " << material.getConductivity(T) << " W/mK\n";
-	std::cout << "c(T): " << material.getSpecificHeat(T) << " J/kgK\n";
+	MaterialModel material(1700.0, { 20.0, 100.0, 200.0, 300.0 }, { 160.0,155.0,148.0,142.0 }, { 1000.0,1030.0,1080.0,1120.0 });
 
-    return 0;
+	std::vector<double> nodalTemperatures(mesh.nodesCount, 20.0); // Initial temperature
+
+	const Element& element = mesh.elements[0];
+
+	auto H = ElementMatrices::computeHWithMaterialModel(element, mesh, ue, material, nodalTemperatures);
+
+	auto C = ElementMatrices::computeCWithMaterialModel(element, mesh, ue, material, nodalTemperatures);
+
+	std::cout << "H[0][0]: " << H[0][0] << std::endl;
+	std::cout<< "C[0][0]: " << C[0][0] << std::endl;
+	return 0;
 }
