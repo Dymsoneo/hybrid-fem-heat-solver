@@ -4,7 +4,7 @@
 
 #include "../mesh/Mesh.h"
 #include "UniversalElement.h"
-#include "ElementMatrices.h"
+#include "../material/MaterialModel.h"
 
 // Assembling global FEM matrices from local element matrices
 class Assembly
@@ -28,7 +28,9 @@ public:
     static AssemblyResult assembleSystem(const Mesh& mesh, const UniversalElement& ue, double conductivity, double density, double specificHeat,
         double alpha, double ambientTemperature);
 
-    
+
+	// Assembles all global matrices and vectors needed, using material model to compute conductivity and specific heat at each integration point
+	static AssemblyResult assembleSystemWithMaterialModel(const Mesh& mesh, const UniversalElement& ue, const MaterialModel& material, const std::vector<double>& nodalTemperatures, double alpha, double ambientTemperature);
 
 private:
    

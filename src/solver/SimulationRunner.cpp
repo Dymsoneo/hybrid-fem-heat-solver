@@ -1,5 +1,5 @@
 #include "SimulationRunner.h"
-#include "TimerIntegrator.h"
+#include "TimeIntegrator.h"
 
 SimulationRunner::SimulationResult SimulationRunner::runSimulation(const Assembly::AssemblyResult& system, const Vector& initialTemperature, double timeStep, double totalTime)
 {

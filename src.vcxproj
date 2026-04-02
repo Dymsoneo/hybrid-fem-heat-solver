@@ -30,7 +30,7 @@
     <ClCompile Include="src\mesh\MeshGenerator.cpp" />
     <ClCompile Include="src\solver\LinearSolver.cpp" />
     <ClCompile Include="src\solver\SimulationRunner.cpp" />
-    <ClCompile Include="src\solver\TimerIntegrator.cpp" />
+    <ClCompile Include="src\solver\TimeIntegrator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\fem\Assembly.h" />
@@ -45,7 +45,7 @@
     <ClInclude Include="src\mesh\Node.h" />
     <ClInclude Include="src\solver\LinearSolver.h" />
     <ClInclude Include="src\solver\SimulationRunner.h" />
-    <ClInclude Include="src\solver\TimerIntegrator.h" />
+    <ClInclude Include="src\solver\TimeIntegrator.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
