@@ -15,7 +15,7 @@ int main()
 	Mesh mesh = MeshGenerator::generateCylinderMesh(0.02, 0.05, 10, 20);
 	UniversalElement ue;
 
-	MaterialModel material(1700.0, { 20.0, 100.0, 200.0, 300.0, 400.0 }, { 160.0, 155.0, 148.0, 142.0, 136.0 }, { 1000.0, 1030.0, 1080.0, 1120.0, 1160.0 });
+	MaterialModel material(1700.0, "data/materials/magnesium_alloy.csv");
 
 	std::vector<double> T(mesh.nodesCount, 20.0); // Initial temperature
 

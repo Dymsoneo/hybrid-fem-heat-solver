@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 
 // Stores temperature-dependent material properties used in transient heat conduction simulations
 class MaterialModel
@@ -14,9 +15,14 @@ class MaterialModel
 	// Performs linear interpolation to find the property value at the given temperature
 	double interpolate(double temperature, const std::vector<double>& values) const;
 
+	void validateInput() const;
+	void loadFromCsv(const std::string& filePath);
+
 public:
 
 	MaterialModel(double density, const std::vector<double>& temperatures, const std::vector<double>& conductivityValues, const std::vector<double>& specificHeatValues);
+
+	MaterialModel(double density, const std::string& filePath);
 
 	double getDensity() const;
 
