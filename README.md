@@ -38,6 +38,8 @@ where:
 
 Boundary conditions include convection heat transfer with ambient temperature.
 
+---
+
 # Features
 
 - transient heat conduction solver
@@ -76,6 +78,8 @@ hybrid-fem-heat-solver/
 ├── results/ → simulation results and plots
 ```
 
+---
+
 # Current Solver Architecture
 
 The solver currently consists of the following core modules:
@@ -97,14 +101,39 @@ The solver currently consists of the following core modules:
   - Load vector (P)
 
 - **Assembly**
-  - Global matrix assembly for H, C and boundary contributions
+  - Global matrix assembly:
+    - H (conductivity)
+    - C (capacity)
+    - Hbc (boundary)
+    - P (load vector)
 
-The solver currently supports transient heat conduction and has been validated against a commercial FEM tool.
+- **Time Integration**
+  - Implicit time integration scheme
+  - Transient simulation support
 
-Further development will include:
-- nonlinear material models (k(T), c(T))
-- realtime simulation mode
-- integration with experimental data acquisition
+- **Nonlinear Solver**
+  - Temperature-dependent material properties
+  - Picard iteration loop
+  - Evaluation of material properties in Gauss points
+
+---
+
+# Validation
+The solver has been validated using:
+
+- **Numerical validation**
+  - comparison with **SolidWorks Simulation**
+  - transient heating case
+  - high agreement (error < 0.01°C)
+
+- **Nonlinear model study**
+  - comparison between linear and nonlinear material models
+  - observed differences up to ~6°C
+  - physically consistent behavior:
+    - decreasing conductivity
+    - increasing heat capacity
+
+---
 
 # Experimental Validation
 
@@ -137,7 +166,16 @@ Steps:
 ## Project Status
 
 Current milestone:
-- nonlinear material model: `k(T)`, `c(T)`
-- implementation of Picard iteration
+- FEM solver (linear and nonlinear) fully implemented
+- validation against SolidWorks completed
+- nonlinear material model implemented (k(T), c(T))
+- Picard iteration solver implemented
+- nonlinear vs linear comparison study completed
+
+Next steps:
+- performance analysis and optimization
 - development of realtime simulation mode
-- integration with Arduino measurement system
+- experimental validation using furnance measurements
+- integration with Arduino-based data acquisition
+
+---
