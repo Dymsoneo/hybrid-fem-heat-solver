@@ -14,9 +14,21 @@ public:
 	using Matrix = std::vector<std::vector<double>>;
 	using Vector = std::vector<double>;
 
+	struct PicardStats 
+	{
+		int iterations = 0;
+		double finalError = 0.0;
+	};
+
+	struct nonlinearStepResult
+	{
+		Vector temperature;
+		PicardStats stats;
+	};
+
 	// Linear implicit time integration step: (C + dt(H + Hbc)) * Tn+1 = C*Tn + dt*P
 	static Vector step(const Assembly::AssemblyResult& system, const Vector& Tn, double dt);
 
 	// Non-linear time integration step using material model: (C(Tn) + dt(H(Tn) + Hbc)) * Tn+1 = C(Tn)*Tn + dt*P
-	static Vector stepNonLinear(const Mesh& mesh, const UniversalElement& ue, const MaterialModel& material, const Vector& Tn, double dt, double alpha, double ambientTemperature, int maxIterations, double tolerance);
+	static nonlinearStepResult stepNonLinear(const Mesh& mesh, const UniversalElement& ue, const MaterialModel& material, const Vector& Tn, double dt, double alpha, double ambientTemperature, int maxIterations, double tolerance);
 };

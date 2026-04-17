@@ -38,12 +38,14 @@ SimulationRunner::SimulationResult SimulationRunner::runNonLinear(const Mesh& me
 
 	for (int step = 0; step < steps; ++step)
 	{
-		Vector nextTemperature = TimeIntegrator::stepNonLinear(mesh, ue, material, currentTemperature, timeStep, alpha, ambientTemperature, maxIterations, tolerance);
 
-		currentTemperature = nextTemperature;
+		auto stepResult = TimeIntegrator::stepNonLinear(mesh, ue, material, currentTemperature, timeStep, alpha, ambientTemperature, maxIterations, tolerance);
+		currentTemperature = stepResult.temperature;
 
 		result.temperatureHistory.push_back(currentTemperature);
 		result.timePoints.push_back((step + 1) * timeStep);
+		result.picardIterations.push_back(stepResult.stats.iterations);
+		result.picardErrors.push_back(stepResult.stats.finalError);
 	}
 
 	return result;

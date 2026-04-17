@@ -23,6 +23,9 @@ public:
 	{
 		TemperatureHistory temperatureHistory;
 		std::vector<double> timePoints;
+
+		std::vector<int> picardIterations; // Only used for nonlinear simulation, stores number of iterations in each time step
+		std::vector<double> picardErrors; // Only used for nonlinear simulation, stores final error in each time step
 	};
 
 	// Runs a linear transient simulation using a preassembled system.

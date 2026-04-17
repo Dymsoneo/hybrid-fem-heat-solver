@@ -36,7 +36,7 @@ TimeIntegrator::Vector TimeIntegrator::step(const Assembly::AssemblyResult& syst
     return LinearSolver::solve(A, b);
 }
 
-TimeIntegrator::Vector TimeIntegrator::stepNonLinear(const Mesh& mesh, const UniversalElement& ue, const MaterialModel& material, const Vector& Tn, double dt, double alpha, double ambientTemperature, int maxIterations, double tolerance)
+TimeIntegrator::nonlinearStepResult TimeIntegrator::stepNonLinear(const Mesh& mesh, const UniversalElement& ue, const MaterialModel& material, const Vector& Tn, double dt, double alpha, double ambientTemperature, int maxIterations, double tolerance)
 {
     // Picard iteration for one nonlinear time step. Initial guess: T^(0) = T^n
     // For each iteration:
@@ -46,6 +46,8 @@ TimeIntegrator::Vector TimeIntegrator::stepNonLinear(const Mesh& mesh, const Uni
 
     Vector currentGuess = Tn;
 	Vector nextGuess = Tn;
+
+	PicardStats stats;
 
     for (int iter = 0; iter < maxIterations; iter++)
     {
@@ -86,13 +88,16 @@ TimeIntegrator::Vector TimeIntegrator::stepNonLinear(const Mesh& mesh, const Uni
 			maxDifference = std::max(maxDifference, std::abs(nextGuess[i] - currentGuess[i]));
         }
 
+		stats.iterations = iter + 1;
+        stats.finalError = maxDifference;
+
 		if (maxDifference < tolerance)
         {
-			return nextGuess;
+			return { nextGuess, stats };
         }
 
         currentGuess = nextGuess;
     }
 
-	return nextGuess; // Return last guess if max iterations reached without convergence
+	return { nextGuess, stats }; // Return last guess if max iterations reached without convergence
 }
