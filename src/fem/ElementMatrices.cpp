@@ -123,6 +123,20 @@ double ElementMatrices::computeTemperatureAtGaussPoint(const Element& element, c
 	return temperature;
 }
 
+double ElementMatrices::computeTemperatureAtEdgeGaussPoint(const Element& element, const UniversalElement& ue, const std::vector<double>& nodalTemperatures, int edgeIndex, int integrationPointIndex1D)
+{
+	double temperature = 0.0;
+
+    for (int i = 0; i < UniversalElement::nodesCount; i++)
+    {
+        int globalNodeId = element.nodeIds[i];
+
+		temperature += ue.edges[edgeIndex].N[integrationPointIndex1D][i] * nodalTemperatures[globalNodeId];
+    }
+
+	return temperature;
+}
+
 Element::Matrix4 ElementMatrices::computeH(const Element& element, const Mesh& mesh, const UniversalElement& ue, double conductivity)
 {
     Element::Matrix4 H{};
@@ -296,4 +310,133 @@ Element::Matrix4 ElementMatrices::computeCWithMaterialModel(const Element& eleme
     }
 
 	return C;
+}
+
+Element::Matrix4 ElementMatrices::computeHbcWithHTCModels(const Element& element, const Mesh& mesh, const UniversalElement& ue, const BoundaryConditionManager& boundaryConditions, const std::vector<double>& nodalTemperatures)
+{
+	Element::Matrix4 Hbc{};
+
+    for (int edge = 0; edge < UniversalElement::edgesCount; edge++)
+    {
+        if (!isBoundaryEdge(element, mesh, edge))
+        {
+            continue;
+        }
+
+        BoundarySide side = getBoundarySideFromEdge(edge);
+
+        if (!boundaryConditions.hasHTCModel(side))
+        {
+            continue;
+        }
+
+        const HTCModel& htcModel = boundaryConditions.getHTCModel(side);
+
+        double detJ1D = computeEdgeDetJ(element, mesh, edge);
+
+        for (int p = 0; p < UniversalElement::integrationPoints1D; p++)
+        {
+            double surfaceTemperature =
+                computeTemperatureAtEdgeGaussPoint(
+                    element,
+                    ue,
+                    nodalTemperatures,
+                    edge,
+                    p
+                );
+
+            double h = htcModel.getHTC(surfaceTemperature);
+
+            double weight = ue.gaussPoints1D[p].weight;
+
+            double r_gp =
+                computeRadiusAtEdgeGaussPoint(
+                    element,
+                    mesh,
+                    ue,
+                    edge,
+                    p
+                );
+
+            double integrationFactor =
+                2.0 * PI * r_gp * detJ1D * weight;
+
+            for (int i = 0; i < UniversalElement::nodesCount; i++)
+            {
+                for (int j = 0; j < UniversalElement::nodesCount; j++)
+                {
+                    Hbc[i][j] +=
+                        h *
+                        ue.edges[edge].N[p][i] *
+                        ue.edges[edge].N[p][j] *
+                        integrationFactor;
+                }
+            }
+        }
+    }
+
+    return Hbc;
+}
+
+Element::Vector4 ElementMatrices::computePWithHTCModels(const Element& element, const Mesh& mesh, const UniversalElement& ue, const BoundaryConditionManager& boundaryConditions, const std::vector<double>& nodalTemperatures, double ambientTemperature)
+{
+	Element::Vector4 P{};
+
+    for (int edge = 0; edge < UniversalElement::edgesCount; edge++)
+    {
+        if (!isBoundaryEdge(element, mesh, edge))
+        {
+            continue;
+        }
+
+        BoundarySide side = getBoundarySideFromEdge(edge);
+
+        if (!boundaryConditions.hasHTCModel(side))
+        {
+            continue;
+        }
+
+        const HTCModel& htcModel = boundaryConditions.getHTCModel(side);
+
+        double detJ1D = computeEdgeDetJ(element, mesh, edge);
+
+        for (int p = 0; p < UniversalElement::integrationPoints1D; p++)
+        {
+            double surfaceTemperature =
+                computeTemperatureAtEdgeGaussPoint(
+                    element,
+                    ue,
+                    nodalTemperatures,
+                    edge,
+                    p
+                );
+
+            double h = htcModel.getHTC(surfaceTemperature);
+
+            double weight = ue.gaussPoints1D[p].weight;
+
+            double r_gp =
+                computeRadiusAtEdgeGaussPoint(
+                    element,
+                    mesh,
+                    ue,
+                    edge,
+                    p
+                );
+
+            double integrationFactor =
+                2.0 * PI * r_gp * detJ1D * weight;
+
+            for (int i = 0; i < UniversalElement::nodesCount; i++)
+            {
+                P[i] +=
+                    h *
+                    ambientTemperature *
+                    ue.edges[edge].N[p][i] *
+                    integrationFactor;
+            }
+        }
+    }
+
+    return P;
 }

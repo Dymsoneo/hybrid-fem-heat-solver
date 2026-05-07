@@ -18,7 +18,8 @@ Mesh MeshGenerator::generateCylinderMesh(double radius, double height, int eleme
             double r = i * dr;
             double z = j * dz;
 
-            bool isBoundary = (i == elementsR);
+            // boundary on every edge
+			bool isBoundary = (i == 0) || (i == elementsR) || (j == 0) || (j == elementsZ);
 
             mesh.addNode(Node(nodeId, r, z, isBoundary));
             nodeId++;

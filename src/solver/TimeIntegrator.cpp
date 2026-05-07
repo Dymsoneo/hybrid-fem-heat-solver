@@ -101,3 +101,73 @@ TimeIntegrator::nonlinearStepResult TimeIntegrator::stepNonLinear(const Mesh& me
 
 	return { nextGuess, stats }; // Return last guess if max iterations reached without convergence
 }
+
+TimeIntegrator::nonlinearStepResult TimeIntegrator::stepNonLinearWithHTC(const Mesh& mesh, const UniversalElement& ue, const MaterialModel& material, const Vector& Tn, double dt, const BoundaryConditionManager& boundaryConditions, double ambientTemperature, int maxIterations, double tolerance)
+{
+    Vector currentGuess = Tn;
+    Vector nextGuess = Tn;
+
+    PicardStats stats;
+
+    for (int iter = 0; iter < maxIterations; iter++)
+    {
+		auto system = Assembly::assembleSystemWithMaterialAndHTCModels(mesh, ue, material, currentGuess, boundaryConditions, ambientTemperature);
+
+        int n = static_cast<int>(Tn.size());
+
+        Matrix A(n, std::vector<double>(n, 0.0));
+        Vector b(n, 0.0);
+
+        /*
+            A = C(T) + dt * (H(T) + Hbc(h(Ts)))
+        */
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                A[i][j] =
+                    system.C[i][j] +
+                    dt * (system.H[i][j] + system.Hbc[i][j]);
+            }
+        }
+
+        /*
+            b = C(T) * Tn + dt * P(h(Ts), T_inf)
+        */
+        for (int i = 0; i < n; i++)
+        {
+            double sum = 0.0;
+
+            for (int j = 0; j < n; j++)
+            {
+                sum += system.C[i][j] * Tn[j];
+            }
+
+            b[i] = sum + dt * system.P[i];
+        }
+
+        nextGuess = LinearSolver::solve(A, b);
+
+        double maxDifference = 0.0;
+
+        for (int i = 0; i < n; i++)
+        {
+            maxDifference = std::max(
+                maxDifference,
+                std::abs(nextGuess[i] - currentGuess[i])
+            );
+        }
+
+        stats.iterations = iter + 1;
+        stats.finalError = maxDifference;
+
+        if (maxDifference < tolerance)
+        {
+            return { nextGuess, stats };
+        }
+
+        currentGuess = nextGuess;
+    }
+
+    return { nextGuess, stats };
+}

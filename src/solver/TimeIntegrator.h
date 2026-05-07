@@ -6,6 +6,7 @@
 #include "../material/MaterialModel.h"
 #include "../mesh/Mesh.h"
 #include "../fem/UniversalElement.h"
+#include "../boundary/BoundaryConditionManager.h"
 
 // Preforms one time step of transient heat conduction
 class TimeIntegrator
@@ -31,4 +32,7 @@ public:
 
 	// Non-linear time integration step using material model: (C(Tn) + dt(H(Tn) + Hbc)) * Tn+1 = C(Tn)*Tn + dt*P
 	static nonlinearStepResult stepNonLinear(const Mesh& mesh, const UniversalElement& ue, const MaterialModel& material, const Vector& Tn, double dt, double alpha, double ambientTemperature, int maxIterations, double tolerance);
+	
+	static nonlinearStepResult stepNonLinearWithHTC(const Mesh& mesh, const UniversalElement& ue, const MaterialModel& material, const Vector& Tn, double dt, 
+		const BoundaryConditionManager& boundaryConditions, double ambientTemperature, int maxIterations, double tolerance);
 };

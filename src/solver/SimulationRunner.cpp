@@ -50,3 +50,30 @@ SimulationRunner::SimulationResult SimulationRunner::runNonLinear(const Mesh& me
 
 	return result;
 }
+
+SimulationRunner::SimulationResult SimulationRunner::runNonLinearWithHTC(const Mesh& mesh, const UniversalElement& ue, const MaterialModel& material, const Vector& initialTemperature, double timeStep, double totalTime, double ambientTemperature, const BoundaryConditionManager& boundaryConditions, double tolerance, int maxIterations)
+{
+	SimulationResult result;
+
+	Vector currentTemperature = initialTemperature;
+
+	result.temperatureHistory.push_back(currentTemperature);
+	result.timePoints.push_back(0.0);
+
+	int steps = static_cast<int>(totalTime / timeStep);
+
+	for (int step = 0; step < steps; ++step)
+	{
+		auto stepResult = TimeIntegrator::stepNonLinearWithHTC(mesh, ue, material, currentTemperature, timeStep, boundaryConditions, ambientTemperature, maxIterations, tolerance);
+
+		currentTemperature = stepResult.temperature;
+
+		result.temperatureHistory.push_back(currentTemperature);
+
+		result.timePoints.push_back((step + 1) * timeStep);
+
+		result.picardIterations.push_back(stepResult.stats.iterations);
+		result.picardErrors.push_back(stepResult.stats.finalError);
+	}
+	return result;
+}

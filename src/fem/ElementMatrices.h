@@ -5,6 +5,8 @@
 #include "../mesh/Mesh.h"
 #include "UniversalElement.h"
 #include "../material/MaterialModel.h"
+#include "../boundary/BoundaryConditionManager.h"
+#include "../boundary/BoundaryUtilities.h"
 
 
 // Computes local FEM matrices for single Q4 element
@@ -34,6 +36,12 @@ public:
 	// Computes local capacity matrix C for one element using material model. Specific heat is interpolated based on nodal temperatures
 	static Element::Matrix4 computeCWithMaterialModel(const Element& element, const Mesh& mesh, const UniversalElement& ue, const MaterialModel& material, const std::vector<double>& nodalTemeratures);
 
+	// Computes local boundary convection matrix. Integration only on boundary edges. HTC coefficient is interpolated based on nodal temperatures and HTC models defined in BoundaryConditionManager
+	static Element::Matrix4 computeHbcWithHTCModels(const Element& element, const Mesh& mesh, const UniversalElement& ue, const BoundaryConditionManager& boundaryConditions, const std::vector<double>& nodalTemperatures);
+
+	// Computes convection load vector. Integration only on boundary edges. HTC coefficient is interpolated based on nodal temperatures and HTC models defined in BoundaryConditionManager
+	static Element::Vector4 computePWithHTCModels(const Element& element, const Mesh& mesh, const UniversalElement& ue, const BoundaryConditionManager& boundaryConditions, const std::vector<double>& nodalTemperatures, double ambientTemperature);
+
 private:
     
     // Computes radial coordinate r at the current Gauss point (r = sum(N_i * r_i)). This is required by the axisymmetric formulation
@@ -46,4 +54,6 @@ private:
     static double computeRadiusAtEdgeGaussPoint(const Element& element, const Mesh& mesh, const UniversalElement& ue, int edgeIndex, int integrationPointIndex1D);
 
     static double computeTemperatureAtGaussPoint(const Element& element, const UniversalElement& ue, const std::vector<double>& nodalTemperatures, int integrationPointIndex);
+
+	static double computeTemperatureAtEdgeGaussPoint(const Element& element, const UniversalElement& ue, const std::vector<double>& nodalTemperatures, int edgeIndex, int integrationPointIndex1D);
 };

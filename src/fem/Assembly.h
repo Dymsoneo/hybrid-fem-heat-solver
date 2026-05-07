@@ -5,6 +5,7 @@
 #include "../mesh/Mesh.h"
 #include "UniversalElement.h"
 #include "../material/MaterialModel.h"
+#include "../boundary/BoundaryConditionManager.h"
 
 // Assembling global FEM matrices from local element matrices
 class Assembly
@@ -31,6 +32,10 @@ public:
 
 	// Assembles all global matrices and vectors needed, using material model to compute conductivity and specific heat at each integration point
 	static AssemblyResult assembleSystemWithMaterialModel(const Mesh& mesh, const UniversalElement& ue, const MaterialModel& material, const std::vector<double>& nodalTemperatures, double alpha, double ambientTemperature);
+
+
+	// Assembles all global matrices and vectors needed, using material model to compute conductivity and specific heat at each integration point, and using HTC models for boundary conditions
+	static AssemblyResult assembleSystemWithMaterialAndHTCModels(const Mesh& mesh, const UniversalElement& ue, const MaterialModel& material, const std::vector<double>& nodalTemperatures, const BoundaryConditionManager& boundaryConditions, double ambientTemperature);
 
 private:
    

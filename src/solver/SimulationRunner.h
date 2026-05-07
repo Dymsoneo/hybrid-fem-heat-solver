@@ -3,6 +3,7 @@
 #include<vector>
 
 #include "../fem/Assembly.h"
+#include "../boundary/BoundaryConditionManager.h"
 
 
 // Runs a full transient FEM simulation over multiple time steps.
@@ -34,4 +35,7 @@ public:
 	// Runs a nonlinear transient simulation, using Picard iteration in each time step.
 	static SimulationResult runNonLinear(const Mesh& mesh, const UniversalElement& ue, const MaterialModel& material, const Vector& initialTemperature, double timeStep, double totalTime, double alpha,
 		double ambientTemperature, double tolerance, int maxIterations);
+
+	static SimulationResult runNonLinearWithHTC(const Mesh& mesh, const UniversalElement& ue, const MaterialModel& material, const Vector& initialTemperature, double timeStep, double totalTime, double ambientTemperature,
+		const BoundaryConditionManager& boundaryConditions, double tolerance, int maxIterations);
 };

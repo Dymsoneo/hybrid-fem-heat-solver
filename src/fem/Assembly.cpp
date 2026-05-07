@@ -1,6 +1,7 @@
 #include "Assembly.h"
 #include "ElementMatrices.h"
 
+
 Assembly::AssemblyResult Assembly::assembleSystem(const Mesh& mesh, const UniversalElement& ue, double conductivity, double density, double specificHeat, double alpha, double ambientTemperature)
 {
     AssemblyResult result;
@@ -55,6 +56,37 @@ Assembly::AssemblyResult Assembly::assembleSystemWithMaterialModel(const Mesh& m
 		addLocalMatrixToGlobal(result.Hbc, element, Hbclocal);
 		addLocalMatrixToGlobal(result.C, element, Clocal);
 		addLocalVectorToGlobal(result.P, element, Plocal);
+    }
+
+    return result;
+}
+
+Assembly::AssemblyResult Assembly::assembleSystemWithMaterialAndHTCModels(const Mesh & mesh, const UniversalElement & ue, const MaterialModel & material, const std::vector<double>&nodalTemperatures, const BoundaryConditionManager & boundaryConditions, double ambientTemperature)
+{
+	AssemblyResult result;
+
+	int n = mesh.nodesCount;
+
+	result.H = GlobalMatrix(n, std::vector<double>(n, 0.0));
+	result.Hbc = GlobalMatrix(n, std::vector<double>(n, 0.0));
+	result.C = GlobalMatrix(n, std::vector<double>(n, 0.0));
+	result.P = GlobalVector(n, 0.0);
+
+    for (const auto& element : mesh.elements)
+    {
+		Element::Matrix4 Hlocal = ElementMatrices::computeHWithMaterialModel(element, mesh, ue, material, nodalTemperatures);
+
+		Element::Matrix4 Hbclocal = ElementMatrices::computeHbcWithHTCModels(element, mesh, ue, boundaryConditions, nodalTemperatures);
+
+		Element::Matrix4 Clocal = ElementMatrices::computeCWithMaterialModel(element, mesh, ue, material, nodalTemperatures);
+
+		Element::Vector4 Plocal = ElementMatrices::computePWithHTCModels(element, mesh, ue, boundaryConditions, nodalTemperatures, ambientTemperature);
+
+
+        addLocalMatrixToGlobal(result.H, element, Hlocal);
+        addLocalMatrixToGlobal(result.Hbc, element, Hbclocal);
+        addLocalMatrixToGlobal(result.C, element, Clocal);
+        addLocalVectorToGlobal(result.P, element, Plocal);
     }
 
     return result;
