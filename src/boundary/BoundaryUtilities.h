@@ -16,13 +16,13 @@ inline BoundarySide getBoundarySideFromEdge(int edgeIndex)
 	switch (edgeIndex)
 	{
 	case 0:
-		return BoundarySide::Left;
+		return BoundarySide::Bottom;
 	case 1:
 		return BoundarySide::Right;
 	case 2:
-		return BoundarySide::Bottom;
-	case 3:
 		return BoundarySide::Top;
+	case 3:
+		return BoundarySide::Left;
 	default:
 		throw std::invalid_argument("Invalid edge index for Q4 element.");
 	}
