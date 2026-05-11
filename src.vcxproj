@@ -27,6 +27,7 @@
     <ClCompile Include="src\fem\Jacobian.cpp" />
     <ClCompile Include="src\fem\UniversalElement.cpp" />
     <ClCompile Include="src\io\ExperimentLogger.cpp" />
+    <ClCompile Include="src\io\MeasurementReader.cpp" />
     <ClCompile Include="src\io\ResultExporter.cpp" />
     <ClCompile Include="src\io\SimulationLogger.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -48,6 +49,7 @@
     <ClInclude Include="src\fem\Jacobian.h" />
     <ClInclude Include="src\fem\UniversalElement.h" />
     <ClInclude Include="src\io\ExperimentLogger.h" />
+    <ClInclude Include="src\io\MeasurementReader.h" />
     <ClInclude Include="src\io\ResultExporter.h" />
     <ClInclude Include="src\io\SimulationLogger.h" />
     <ClInclude Include="src\material\MaterialModel.h" />

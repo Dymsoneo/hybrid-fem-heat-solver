@@ -8,25 +8,21 @@
 #include "io/ResultExporter.h"
 #include "io/ExperimentLogger.h"
 #include "io/SimulationLogger.h"
+#include "io/MeasurementReader.h"
 
 int main()
 {
-    ExperimentLogger experimentLogger(
-        "data/experiments/experiment_001/measurements.csv"
-    );
+   
+	MeasurementReader reader("data/experiments/experiment_001/measurements.csv");
 
-    SimulationLogger simulationLogger(
-        "data/experiments/experiment_001/realtime_simulation.csv"
-    );
+	std::cout << "Loaded " << reader.size() << " measurement samples." << std::endl;
 
-    experimentLogger.logMeasurement(0.0, 20.0);
-    experimentLogger.logMeasurement(1.0, 22.5);
-    experimentLogger.logMeasurement(2.0, 25.1);
+	while (reader.hasNext())
+	{
+		MeasurementSample sample = reader.next();
 
-    simulationLogger.logStep(0.0, 20.0, 20.0, 20.0, 20.0);
-    simulationLogger.logStep(1.0, 22.5, 20.12, 20.0, 20.30);
-    simulationLogger.logStep(2.0, 25.1, 20.31, 20.0, 20.80);
-
+		std::cout << "t = " << sample.timeSeconds << " s, furnace = " << sample.furnaceTemperature << " °C" << std::endl;
+	}
 
     return 0;
 }
