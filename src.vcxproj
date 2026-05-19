@@ -34,6 +34,7 @@
     <ClCompile Include="src\material\MaterialModel.cpp" />
     <ClCompile Include="src\mesh\Mesh.cpp" />
     <ClCompile Include="src\mesh\MeshGenerator.cpp" />
+    <ClCompile Include="src\runner\ReplaySimulationRunner.cpp" />
     <ClCompile Include="src\solver\LinearSolver.cpp" />
     <ClCompile Include="src\solver\SimulationRunner.cpp" />
     <ClCompile Include="src\solver\TimeIntegrator.cpp" />
@@ -57,6 +58,7 @@
     <ClInclude Include="src\mesh\Mesh.h" />
     <ClInclude Include="src\mesh\MeshGenerator.h" />
     <ClInclude Include="src\mesh\Node.h" />
+    <ClInclude Include="src\runner\ReplaySimulationRunner.h" />
     <ClInclude Include="src\solver\LinearSolver.h" />
     <ClInclude Include="src\solver\SimulationRunner.h" />
     <ClInclude Include="src\solver\TimeIntegrator.h" />
