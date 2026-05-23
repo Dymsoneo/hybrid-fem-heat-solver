@@ -1,20 +1,34 @@
 #include <iostream>
 
-#include "io/SerialReader.h"
+
+#include "mesh/MeshGenerator.h"
+#include "config/SimulationConfig.h"
+#include "runner/RealtimeSimulationRunner.h"
 
 
 int main()
 {
-	SerialReader reader;
 
-	reader.open("COM7", 9600);
+	SimulationConfig config = createRealtimeConfig();
+	
+	Mesh mesh = MeshGenerator::generateCylinderMesh(0.02, 0.05, config.radialElements, config.axialElements);
+	UniversalElement ue;
 
-	while (true) 
-	{
-		double temperature = reader.readTemperature();
+	MaterialModel material(1700.0, "data/materials/magnesium_alloy.csv");
 
-		std::cout << "Furnace Temperature: " << temperature << "°C" << std::endl;
-	}
+	BoundaryConditionManager boundaryConditions;
+
+	HTCModel furnaceHTC("data/boundary/htc_effective.csv");
+
+	boundaryConditions.setHTCModel(BoundarySide::Right, furnaceHTC);
+	boundaryConditions.setHTCModel(BoundarySide::Top, furnaceHTC);
+
+
+	std::vector<double> initialTemperature(mesh.nodes.size(), 20.0);
+
+	int centerNodeId = mesh.findClosestNode(0.0, 0.025);
+
+	RealtimeSimulationRunner::run("COM7", 9600, "data/experiments/experiment_001/realtime_simulation_online.csv", mesh, ue, material, boundaryConditions, config, initialTemperature, centerNodeId, 50);
 
     return 0;
 }
