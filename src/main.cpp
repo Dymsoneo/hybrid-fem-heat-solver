@@ -28,7 +28,16 @@ int main()
 
 	int centerNodeId = mesh.findClosestNode(0.0, 0.025);
 
-	RealtimeSimulationRunner::run("COM7", 9600, "data/experiments/experiment_001/realtime_simulation_online.csv", mesh, ue, material, boundaryConditions, config, initialTemperature, centerNodeId, 50);
+	
+
+	RealtimeSimulationRunner::run("COM7", 9600, "validation/realtime_performance/data.csv",
+		"validation/realtime_performance/performance.csv",
+		mesh, ue, material, boundaryConditions, config, initialTemperature, centerNodeId, 50);
+
+	
+
+	
+
 
     return 0;
 }
