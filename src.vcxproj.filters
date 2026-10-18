@@ -81,6 +81,9 @@
     <ClCompile Include="src\io\RealtimePerformanceLogger.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
+    <ClCompile Include="validation\acquisition_performance\acquisition_test.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\mesh\Node.h">

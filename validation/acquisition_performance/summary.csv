@@ -1,0 +1,4 @@
+test,target_period_ms,samples,first_id,last_id,missing_ids,arduino_mean_ms,arduino_std_ms,arduino_min_ms,arduino_max_ms,pc_mean_ms,pc_std_ms,pc_min_ms,pc_max_ms,pc_p95_absolute_jitter_ms,pc_effective_hz,drift_ms,relative_drift_percent
+1hz,1000,200,0,199,0,1000,0,1000,1000,1001.802322,2.017226,998,1005,4,0.998201,358.662,0.180232
+2hz,500,200,37,236,0,500,0.246183,499,501,500.888302,1.875289,498,504.7,3.9,1.996453,176.772,0.17766
+4hz,250,200,30,229,0,250,0.246183,249,251,250.444619,1.448191,248.9,254.2,4,3.992899,88.4791,0.177847

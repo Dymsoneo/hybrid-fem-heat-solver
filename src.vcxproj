@@ -41,6 +41,7 @@
     <ClCompile Include="src\solver\LinearSolver.cpp" />
     <ClCompile Include="src\solver\SimulationRunner.cpp" />
     <ClCompile Include="src\solver\TimeIntegrator.cpp" />
+    <ClCompile Include="validation\acquisition_performance\acquisition_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\boundary\BoundaryConditionManager.h" />

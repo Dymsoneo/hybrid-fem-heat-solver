@@ -1,0 +1,4 @@
+Skipping missing file: acquisition_1hz.csv
+test  target_period_ms  samples  first_id  last_id  missing_ids  arduino_mean_ms  arduino_std_ms  arduino_min_ms  arduino_max_ms  pc_mean_ms  pc_std_ms  pc_min_ms  pc_max_ms  pc_p95_absolute_jitter_ms  pc_effective_hz  drift_ms  relative_drift_percent
+ 2hz             500.0      200        37      236            0            500.0        0.246183           499.0           501.0  500.888302   1.875289      498.0      504.7                        3.9         1.996453  176.7720                0.177660
+ 4hz             250.0      200        30      229            0            250.0        0.246183           249.0           251.0  250.444619   1.448191      248.9      254.2                        4.0         3.992899   88.4791                0.177847
