@@ -5,6 +5,7 @@
 #include <string>
 #include <thread>
 #include <chrono>
+#include <sstream>
 
 
 SerialReader::~SerialReader()
@@ -49,6 +50,7 @@ void SerialReader::open(const std::string& portName, int baudRate)
 
 	PurgeComm(handle, PURGE_RXCLEAR | PURGE_TXCLEAR);
 
+	acquisitionStart = std::chrono::steady_clock::now();
 }
 
 bool SerialReader::isOpen() const
@@ -127,4 +129,58 @@ std::string SerialReader::readLine()
 		}
 	}
 	return line;
+}
+
+MeasurementSample SerialReader::readSample()
+{
+	while (true)
+	{
+		const std::string line = readLine();
+		const auto receivedAt = std::chrono::steady_clock::now();
+
+		std::stringstream ss(line);
+		std::string id, timestamp, temperature, extra;
+
+		if (!std::getline(ss, id, ',') ||
+			!std::getline(ss, timestamp, ',') ||
+			!std::getline(ss, temperature, ',') ||
+			std::getline(ss, extra, ','))
+		{
+			continue;
+		}
+
+		try
+		{
+			size_t p1 = 0, p2 = 0, p3 = 0;
+
+			const auto parsedId = std::stoull(id, &p1);
+			const auto parsedTime = std::stoul(timestamp, &p2);
+			const auto parsedTemp = std::stod(temperature, &p3);
+
+			if (p1 != id.size() ||
+				p2 != timestamp.size() ||
+				p3 != temperature.size() ||
+				parsedTime > UINT32_MAX ||
+				!std::isfinite(parsedTemp))
+			{
+				continue;
+			}
+
+			MeasurementSample sample;
+			sample.sampleId = parsedId;
+			sample.arduinoTimeMs =
+				static_cast<std::uint32_t>(parsedTime);
+			sample.temperatureC = parsedTemp;
+
+			sample.pcTimeMs =
+				std::chrono::duration<double, std::milli>(
+					receivedAt - acquisitionStart).count();
+
+			return sample;
+		}
+		catch (const std::exception&)
+		{
+			continue;
+		}
+	}
 }

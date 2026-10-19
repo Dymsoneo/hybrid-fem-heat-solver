@@ -6,7 +6,7 @@ constexpr int THERMO_SCK = 6;
 constexpr int THERMO_CS = 5;
 constexpr int THERMO_SO = 4;
 
-constexpr unsigned long SAMPLE_INTERVAL_MS = 1000;
+constexpr unsigned long SAMPLE_INTERVAL_MS = 500;
 
 MAX6675 thermocouple(
   THERMO_SCK,
@@ -35,10 +35,7 @@ void loop()
     unsigned long timestamp = millis();
     double temperature = thermocouple.readCelsius();
 
-    Serial.print(sampleId);
-    Serial.print(',');
-    Serial.print(timestamp);
-    Serial.print(',');
+    
     Serial.println(temperature, 2);
 
     sampleId++;

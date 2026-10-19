@@ -161,5 +161,8 @@
     <ClInclude Include="src\io\RealtimePerformanceLogger.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
+    <ClInclude Include="src\io\MeasurementSample.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

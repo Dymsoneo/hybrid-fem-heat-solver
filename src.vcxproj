@@ -55,6 +55,7 @@
     <ClInclude Include="src\fem\UniversalElement.h" />
     <ClInclude Include="src\io\ExperimentLogger.h" />
     <ClInclude Include="src\io\MeasurementReader.h" />
+    <ClInclude Include="src\io\MeasurementSample.h" />
     <ClInclude Include="src\io\RealtimePerformanceLogger.h" />
     <ClInclude Include="src\io\ResultExporter.h" />
     <ClInclude Include="src\io\SerialReader.h" />

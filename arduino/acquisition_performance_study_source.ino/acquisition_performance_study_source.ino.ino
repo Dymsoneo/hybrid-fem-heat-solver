@@ -6,7 +6,7 @@ constexpr int THERMO_SCK = 6;
 constexpr int THERMO_CS = 5;
 constexpr int THERMO_SO = 4;
 
-constexpr unsigned long SAMPLE_INTERVAL_MS = 250;
+constexpr unsigned long SAMPLE_INTERVAL_MS = 500;
 
 MAX6675 thermocouple(
   THERMO_SCK,

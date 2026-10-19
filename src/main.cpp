@@ -4,10 +4,42 @@
 #include "mesh/MeshGenerator.h"
 #include "config/SimulationConfig.h"
 #include "runner/RealtimeSimulationRunner.h"
+#include "io/SerialReader.h"
+#include  "io/ExperimentLogger.h"
 
+void testAcquisitionLogging()
+{
+    SerialReader reader;
+    reader.open("COM7", 9600);
+
+    ExperimentLogger logger(
+        "acquisition_test.csv",
+        ExperimentLogFormat::Acquisition
+    );
+
+    constexpr int sampleCount = 20;
+
+    for (int i = 0; i < sampleCount; ++i)
+    {
+        MeasurementSample sample = reader.readSample();
+
+        logger.logSample(sample);
+
+        std::cout
+            << "ID: " << sample.sampleId
+            << " | Arduino: " << sample.arduinoTimeMs
+            << " ms | PC: " << sample.pcTimeMs
+            << " ms | T: " << sample.temperatureC
+            << " C\n";
+    }
+
+    std::cout << "Acquisition test completed.\n";
+}
 
 int main()
 {
+
+	testAcquisitionLogging();
 
 	SimulationConfig config = createRealtimeConfig();
 	
