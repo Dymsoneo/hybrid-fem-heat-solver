@@ -6,6 +6,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cstdint>
+#include <conio.h>
 
 #include "../io/SerialReader.h"
 #include "../io/SimulationLogger.h"
@@ -30,6 +31,16 @@ void RealtimeSimulationRunner::run(const std::string& portName, int baudRate, co
     SerialReader serialReader;
     serialReader.open(portName, baudRate);
 
+    std::cout << "\nArduino connected.\n";
+    std::cout << "Press ENTER to start the experiment...\n";
+
+    std::cin.get();
+
+    serialReader.clearInputBuffer();
+
+    std::cout << "Experiment started.\n";
+    std::cout << "Press Q to stop after the current step.\n\n";
+
     SimulationLogger logger(outputFile);
     RealtimePerformanceLogger performanceLogger(performanceOutputFile);
 
@@ -52,6 +63,18 @@ void RealtimeSimulationRunner::run(const std::string& portName, int baudRate, co
 
     for (int step = 1; step <= maxSteps; ++step)
     {
+
+        if (_kbhit())
+        {
+            const int key = _getch();
+
+            if (key == 'q' || key == 'Q')
+            {
+                std::cout << "\nExperiment stopped by user.\n";
+                break;
+            }
+        }
+
         MeasurementSample sample = serialReader.readSample();
         experimentLogger.logSample(sample);
 
@@ -112,4 +135,8 @@ void RealtimeSimulationRunner::run(const std::string& portName, int baudRate, co
 
         previousSample = sample;
     }
+
+    std::cout << "\nRealtime session finished.\n";
+    std::cout << "Simulation time: " << currentTime << " s\n";
+    std::cout << "Results saved.\n";
 }

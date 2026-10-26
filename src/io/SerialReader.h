@@ -22,10 +22,12 @@ public:
 
 	MeasurementSample readSample();
 
+	void clearInputBuffer();
+
 private:
 	void* serialHandle = nullptr;
 
-	std::string readLine();
+	std::string readLine(std::chrono::steady_clock::time_point deadline);
 
 	std::chrono::steady_clock::time_point acquisitionStart;
 };

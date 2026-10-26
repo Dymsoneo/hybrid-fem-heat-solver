@@ -44,6 +44,17 @@ void SerialReader::open(const std::string& portName, int baudRate)
 		throw std::runtime_error("Failed to set serial port state.");
 	}
 
+	COMMTIMEOUTS timeouts = {};
+	timeouts.ReadIntervalTimeout = MAXDWORD;
+	timeouts.ReadTotalTimeoutConstant = 100;
+	timeouts.ReadTotalTimeoutMultiplier = 0;
+
+	if (!SetCommTimeouts(handle, &timeouts))
+	{
+		CloseHandle(handle);
+		throw std::runtime_error("Failed to set serial port timeouts.");
+	}
+
 	this->serialHandle = handle;
 
 	std::this_thread::sleep_for(std::chrono::seconds(2));
@@ -64,7 +75,8 @@ double SerialReader::readTemperature()
 	{
 		try
 		{
-			std::string line = readLine();
+			const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(3);
+			const std::string line = readLine(deadline);
 
 			if (line.empty())
 			{
@@ -92,21 +104,20 @@ void SerialReader::close()
 	}
 }
 
-std::string SerialReader::readLine()
+std::string SerialReader::readLine(std::chrono::steady_clock::time_point deadline)
 {
 	if (!isOpen())
 	{
 		throw std::runtime_error("Serial port is not open.");
 	}
 
-	HANDLE handle = static_cast<HANDLE>(this->serialHandle);
+	HANDLE handle = static_cast<HANDLE>(serialHandle);
 
 	std::string line;
-
 	char ch;
 	DWORD bytesRead;
 
-	while (true)
+	while (std::chrono::steady_clock::now() < deadline)
 	{
 		if (!ReadFile(handle, &ch, 1, &bytesRead, nullptr))
 		{
@@ -115,27 +126,34 @@ std::string SerialReader::readLine()
 
 		if (bytesRead == 0)
 		{
-			continue; // No data read, try again
+			continue;
 		}
 
 		if (ch == '\n')
 		{
-			break; // End of line
+			return line;
 		}
 
-		if (ch != '\r') // Ignore carriage return
+		if (ch != '\r')
 		{
 			line += ch;
 		}
+
+		if (line.size() > 256)
+		{
+			throw std::runtime_error("Serial frame exceeds maximum length.");
+		}
 	}
-	return line;
+
+	throw std::runtime_error("Serial read timeout: no complete frame received.");
 }
 
 MeasurementSample SerialReader::readSample()
 {
 	while (true)
 	{
-		const std::string line = readLine();
+		const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(3);
+		const std::string line = readLine(deadline);
 		const auto receivedAt = std::chrono::steady_clock::now();
 
 		std::stringstream ss(line);
@@ -182,5 +200,21 @@ MeasurementSample SerialReader::readSample()
 		{
 			continue;
 		}
+	}
+}
+
+void SerialReader::clearInputBuffer()
+{
+	if (!isOpen())
+	{
+		throw std::runtime_error("Serial port is not open.");
+	}
+	
+	HANDLE handle = static_cast<HANDLE>(serialHandle);
+	
+	
+	if (!PurgeComm(handle, PURGE_RXCLEAR))
+	{
+		throw std::runtime_error("Failed to clear serial port input buffer.");
 	}
 }
