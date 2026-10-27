@@ -17,6 +17,8 @@ struct AppConfig
     double density = 1700.0;
     double initialTemperature = 20.0;
 
+    double accurateTimeStep = 0.1;
+
     std::string materialFile =
         "data/materials/magnesium_alloy.csv";
 

@@ -32,6 +32,7 @@
     <ClCompile Include="src\io\RealtimePerformanceLogger.cpp" />
     <ClCompile Include="src\io\ResultExporter.cpp" />
     <ClCompile Include="src\io\SerialReader.cpp" />
+    <ClCompile Include="src\io\SessionManager.cpp" />
     <ClCompile Include="src\io\SimulationLogger.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\material\MaterialModel.cpp" />
@@ -61,6 +62,7 @@
     <ClInclude Include="src\io\RealtimePerformanceLogger.h" />
     <ClInclude Include="src\io\ResultExporter.h" />
     <ClInclude Include="src\io\SerialReader.h" />
+    <ClInclude Include="src\io\SessionManager.h" />
     <ClInclude Include="src\io\SimulationLogger.h" />
     <ClInclude Include="src\material\MaterialModel.h" />
     <ClInclude Include="src\mesh\Element.h" />

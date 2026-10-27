@@ -16,34 +16,10 @@
 #include "../solver/TimeIntegrator.h"
 #include "../io/RealtimePerformanceLogger.h"
 #include "../io/ExperimentLogger.h"
+#include "../io/SessionManager.h"
 
 
 
-namespace
-{
-    std::filesystem::path createSessionDirectory()
-    {
-        const std::filesystem::path root = "results";
-        std::filesystem::create_directories(root);
-
-        for (int id = 1; id <= 9999; ++id)
-        {
-            std::ostringstream name;
-            name << "session_"
-                << std::setw(3) << std::setfill('0') << id;
-
-            const auto path = root / name.str();
-
-            if (std::filesystem::create_directory(path))
-            {
-                return path;
-            }
-        }
-
-        throw std::runtime_error(
-            "Cannot create a new session directory.");
-    }
-}
 
 
 
@@ -75,7 +51,7 @@ void RealtimeSimulationRunner::run(const std::string& portName, int baudRate, co
     std::cout << "Press Q to stop after the current step.\n\n";
 
 
-    const auto sessionDir = createSessionDirectory();
+    const auto sessionDir = SessionManager::createSessionDirectory();
 
     SimulationLogger logger((sessionDir / "simulation.csv").string());
 

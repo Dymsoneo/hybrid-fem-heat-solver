@@ -106,6 +106,14 @@ AppConfig loadAppConfig(const std::string& filePath)
     if (mode == "accurate")
     {
         config.measurementFile = get("measurement_file");
+
+        config.accurateTimeStep =
+            parseDouble(get("accurate_time_step"));
+
+        if (config.accurateTimeStep <= 0.0)
+        {
+            throw std::runtime_error("accurate_time_step must be greater than zero.");
+        }
     }
 
     try

@@ -8,6 +8,7 @@
 #include "runner/RealtimeSimulationRunner.h"
 #include "io/MeasurementReader.h"
 #include "runner/ReplaySimulationRunner.h"
+#include "io/SessionManager.h"
 
 int main(int argc, char* argv[])
 {
@@ -62,8 +63,16 @@ int main(int argc, char* argv[])
         }
         else if (app.mode == "accurate")
         {
-            ReplaySimulationRunner::run(app.measurementFile, "results/accurate_test.csv", 
-                mesh, ue, material, boundaryConditions, config, initialTemperature, centerNodeId);
+
+            const auto sessionDir = SessionManager::createSessionDirectory();
+
+            const auto outputFile = (sessionDir / "simulation.csv").string();
+
+            std::cout << "Accurate session directory: "
+                << sessionDir.string() << '\n';
+
+            ReplaySimulationRunner::run(app.measurementFile, outputFile, 
+                mesh, ue, material, boundaryConditions, config, initialTemperature, centerNodeId, app.accurateTimeStep);
         }
 
         std::cout << "Simulation completed.\n";
