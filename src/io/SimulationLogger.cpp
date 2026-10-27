@@ -55,7 +55,7 @@ void SimulationLogger::writeHeader()
 {
 	if(!this->headerWritten)
 	{
-		file << "time_s,furnance_temperature_c,center_simulated_c,t_min_c,t_max_c\n";
+		file << "time_s,furnace_temperature_c,center_simulated_c,t_min_c,t_max_c\n";
 		headerWritten = true;
 	}
 }

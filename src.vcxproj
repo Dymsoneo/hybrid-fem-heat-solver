@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="src\boundary\BoundaryConditionManager.cpp" />
     <ClCompile Include="src\boundary\HTCModel.cpp" />
+    <ClCompile Include="src\config\AppConfig.cpp" />
     <ClCompile Include="src\config\SimulationConfig.cpp" />
     <ClCompile Include="src\fem\Assembly.cpp" />
     <ClCompile Include="src\fem\ElementMatrices.cpp" />
@@ -48,6 +49,7 @@
     <ClInclude Include="src\boundary\BoundarySide.h" />
     <ClInclude Include="src\boundary\BoundaryUtilities.h" />
     <ClInclude Include="src\boundary\HTCModel.h" />
+    <ClInclude Include="src\config\AppConfig.h" />
     <ClInclude Include="src\config\SimulationConfig.h" />
     <ClInclude Include="src\fem\Assembly.h" />
     <ClInclude Include="src\fem\ElementMatrices.h" />
@@ -169,6 +171,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

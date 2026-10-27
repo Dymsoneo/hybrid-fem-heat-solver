@@ -20,6 +20,8 @@ void ReplaySimulationRunner::run(const std::string& measurementFile, const std::
 
 	MeasurementSample initialSample = reader.next();
 
+	double previousTime = initialSample.timeSeconds;
+
 	double initalTMin = *std::min_element(currentTemperature.begin(), currentTemperature.end());
 	double initalTMax = *std::max_element(currentTemperature.begin(), currentTemperature.end());
 
@@ -30,7 +32,14 @@ void ReplaySimulationRunner::run(const std::string& measurementFile, const std::
 	{
 		MeasurementSample sample = reader.next();
 
-		auto stepResult = TimeIntegrator::stepNonLinearWithHTC(mesh, ue, material, currentTemperature, config.timeStep, boundaryConditions, sample.furnaceTemperature, config.maxPicardIterations, config.picardTolerance);
+		double dt = sample.timeSeconds - previousTime;
+
+		if (dt <= 0.0)
+		{
+			throw std::runtime_error("Measurement timestamps must be strictly increasing.");
+		}
+
+		auto stepResult = TimeIntegrator::stepNonLinearWithHTC(mesh, ue, material, currentTemperature, dt, boundaryConditions, sample.furnaceTemperature, config.maxPicardIterations, config.picardTolerance);
 
 		currentTemperature = stepResult.temperature;
 
@@ -38,5 +47,7 @@ void ReplaySimulationRunner::run(const std::string& measurementFile, const std::
 		double tMax = *std::max_element(currentTemperature.begin(), currentTemperature.end());
 
 		logger.logStep(sample.timeSeconds, sample.furnaceTemperature, currentTemperature[centerNodeId], tMin, tMax);
+
+		previousTime = sample.timeSeconds;
 	}
 }

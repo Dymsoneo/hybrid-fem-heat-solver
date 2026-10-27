@@ -1,52 +1,70 @@
-#include <iostream>
 
+#include <iostream>
+#include <exception>
+#include <vector>
 
 #include "mesh/MeshGenerator.h"
-#include "config/SimulationConfig.h"
+#include "config/AppConfig.h"
 #include "runner/RealtimeSimulationRunner.h"
+#include "io/MeasurementReader.h"
+#include "runner/ReplaySimulationRunner.h"
 
-int main()
+int main(int argc, char* argv[])
 {
-
     try
     {
         
-        SimulationConfig config = createRealtimeConfig();
 
-      
-        Mesh mesh = MeshGenerator::generateCylinderMesh(
-            0.02, 0.05,
-            config.radialElements,
-            config.axialElements);
+        // Configuration file path
+        std::string configPath = "config/realtime.cfg";
+
+        if (argc == 3 && std::string(argv[1]) == "--config")
+        {
+            configPath = argv[2];
+        }
+        else if (argc != 1)
+        {
+            throw std::runtime_error("Usage: HybridFEMHeatSolver.exe --config <file.cfg>");
+        }
+
+        AppConfig app = loadAppConfig(configPath);
+        SimulationConfig& config = app.simulation;
+
+        std::cout << "Configuration loaded: " << configPath << '\n';
+
+        // Mesh
+        Mesh mesh = MeshGenerator::generateCylinderMesh(app.radius, app.height, config.radialElements, config.axialElements);
 
         UniversalElement ue;
 
-        
-        MaterialModel material(
-            1700.0,
-            "data/materials/magnesium_alloy.csv");
+        // Material
+        MaterialModel material(app.density, app.materialFile);
 
-       
+        // Boundary conditions
         BoundaryConditionManager boundaryConditions;
 
-        HTCModel furnaceHTC("data/boundary/htc_effective.csv");
+        HTCModel furnaceHTC(app.htcFile);
 
-        boundaryConditions.setHTCModel(
-            BoundarySide::Right, furnaceHTC);
+        boundaryConditions.setHTCModel(BoundarySide::Right, furnaceHTC);
 
-        boundaryConditions.setHTCModel(
-            BoundarySide::Top, furnaceHTC);
+        boundaryConditions.setHTCModel(BoundarySide::Top, furnaceHTC);
 
-        
-        std::vector<double> initialTemperature(
-            mesh.nodes.size(), 20.0);
+        // Initial condition
+        std::vector<double> initialTemperature(mesh.nodes.size(), app.initialTemperature);
 
-        int centerNodeId = mesh.findClosestNode(
-            0.0, 0.025);
+        int centerNodeId = mesh.findClosestNode(0.0, app.height / 2.0);
 
-        
-        RealtimeSimulationRunner::run("COM7", 9600, "validation/realtime_performance/data.csv", "validation/realtime_performance/performance.csv",
-            mesh, ue, material, boundaryConditions, config, initialTemperature, centerNodeId, 50);
+        // Realtime simulation
+        if (app.mode == "realtime")
+        {
+            RealtimeSimulationRunner::run(app.port, app.baudRate, "unused.csv", "unused_performance.csv", 
+                mesh, ue, material, boundaryConditions, config, initialTemperature, centerNodeId, app.maxSteps);
+        }
+        else if (app.mode == "accurate")
+        {
+            ReplaySimulationRunner::run(app.measurementFile, "results/accurate_test.csv", 
+                mesh, ue, material, boundaryConditions, config, initialTemperature, centerNodeId);
+        }
 
         std::cout << "Simulation completed.\n";
     }

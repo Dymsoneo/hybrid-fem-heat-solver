@@ -7,12 +7,45 @@
 #include <algorithm>
 #include <cstdint>
 #include <conio.h>
+#include <filesystem>
+#include <iomanip>
+#include <sstream>
 
 #include "../io/SerialReader.h"
 #include "../io/SimulationLogger.h"
 #include "../solver/TimeIntegrator.h"
 #include "../io/RealtimePerformanceLogger.h"
 #include "../io/ExperimentLogger.h"
+
+
+
+namespace
+{
+    std::filesystem::path createSessionDirectory()
+    {
+        const std::filesystem::path root = "results";
+        std::filesystem::create_directories(root);
+
+        for (int id = 1; id <= 9999; ++id)
+        {
+            std::ostringstream name;
+            name << "session_"
+                << std::setw(3) << std::setfill('0') << id;
+
+            const auto path = root / name.str();
+
+            if (std::filesystem::create_directory(path))
+            {
+                return path;
+            }
+        }
+
+        throw std::runtime_error(
+            "Cannot create a new session directory.");
+    }
+}
+
+
 
 void RealtimeSimulationRunner::run(const std::string& portName, int baudRate, const std::string& outputFile, const std::string& performanceOutputFile, const Mesh& mesh,
 	const UniversalElement& ue, const MaterialModel& material, const BoundaryConditionManager& boundaryConditions, const SimulationConfig& config, const std::vector<double>& initialTemperature, int centerNodeId, int maxSteps)
@@ -41,10 +74,17 @@ void RealtimeSimulationRunner::run(const std::string& portName, int baudRate, co
     std::cout << "Experiment started.\n";
     std::cout << "Press Q to stop after the current step.\n\n";
 
-    SimulationLogger logger(outputFile);
-    RealtimePerformanceLogger performanceLogger(performanceOutputFile);
 
-    ExperimentLogger experimentLogger("./validation/realtime_performance/realtime_acquisition.csv", ExperimentLogFormat::Acquisition);
+    const auto sessionDir = createSessionDirectory();
+
+    SimulationLogger logger((sessionDir / "simulation.csv").string());
+
+    RealtimePerformanceLogger performanceLogger((sessionDir / "performance.csv").string());
+
+    ExperimentLogger experimentLogger((sessionDir / "acquisition.csv").string(), ExperimentLogFormat::Acquisition);
+
+    std::cout << "Session directory: " << sessionDir.string() << '\n';
+
 
     std::vector<double> currentTemperature = initialTemperature;
 
