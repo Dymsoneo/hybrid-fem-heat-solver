@@ -10,7 +10,7 @@
 #include "../io/SimulationLogger.h"
 #include "../solver/TimeIntegrator.h"
 
-void ReplaySimulationRunner::run(const std::string& measurementFile, const std::string& outputFile, const Mesh& mesh, const UniversalElement& ue, const MaterialModel& material, const BoundaryConditionManager& boundaryConditions, 
+ReplaySummary ReplaySimulationRunner::run(const std::string& measurementFile, const std::string& outputFile, const Mesh& mesh, const UniversalElement& ue, const MaterialModel& material, const BoundaryConditionManager& boundaryConditions, 
 	const SimulationConfig& config, const std::vector<double>& initialTemperature, int centerNodeId, double maxTimeStep)
 {
 
@@ -19,6 +19,7 @@ void ReplaySimulationRunner::run(const std::string& measurementFile, const std::
 		throw std::runtime_error("Maximum time step must be positive and finite.");
 	}
 
+    ReplaySummary summary;
 
 	MeasurementReader reader(measurementFile);
 	SimulationLogger logger(outputFile);
@@ -32,7 +33,7 @@ void ReplaySimulationRunner::run(const std::string& measurementFile, const std::
 
 	MeasurementSample initialSample = reader.next();
 
-	double previousTime = initialSample.timeSeconds;
+	
 
 	double initalTMin = *std::min_element(currentTemperature.begin(), currentTemperature.end());
 	double initalTMax = *std::max_element(currentTemperature.begin(), currentTemperature.end());
@@ -73,6 +74,7 @@ void ReplaySimulationRunner::run(const std::string& measurementFile, const std::
                 boundaryConditions, furnaceTemperature, config.maxPicardIterations, config.picardTolerance);
 
             currentTemperature = std::move(stepResult.temperature);
+            ++summary.femSteps;
         }
 
         // Save results only at original measurement timestamps
@@ -82,7 +84,11 @@ void ReplaySimulationRunner::run(const std::string& measurementFile, const std::
 
         logger.logStep(sample.timeSeconds, sample.furnaceTemperature, currentTemperature[centerNodeId], tMin, tMax);
 
+        ++summary.completedSteps;
+        summary.simulationTime = sample.timeSeconds - initialSample.timeSeconds;
+
         previousSample = sample;
     }
 
+	return summary;
 }

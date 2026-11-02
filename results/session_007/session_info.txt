@@ -1,0 +1,33 @@
+mode=accurate
+status=completed
+start_time=2026-11-02 19:36:20
+config_file=config/accurate.cfg
+
+[mesh]
+radial_elements=20
+axial_elements=40
+
+[geometry]
+radius_m=0.02
+height_m=0.05
+
+[material]
+density_kg_m3=1700
+material_file=data/materials/magnesium_alloy.csv
+
+[boundary_conditions]
+htc_file=data/boundary/htc_effective.csv
+
+[solver]
+initial_temperature_c=20
+picard_tolerance=0.0001
+max_picard_iterations=50
+
+[accurate]
+measurement_file=results/session_001/acquisition.csv
+max_internal_time_step_s=0.1
+furnace_interpolation=linear
+
+end_time=2026-11-02 19:36:35
+completed_steps=10
+simulation_time_s=5

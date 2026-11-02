@@ -1,12 +1,13 @@
-
 #include <iostream>
 #include <exception>
 #include <vector>
+#include <filesystem>
+#include <stdexcept>
 
 #include "mesh/MeshGenerator.h"
 #include "config/AppConfig.h"
 #include "runner/RealtimeSimulationRunner.h"
-#include "io/MeasurementReader.h"
+#include "io/SessionMetadata.h"
 #include "runner/ReplaySimulationRunner.h"
 #include "io/SessionManager.h"
 
@@ -17,7 +18,7 @@ int main(int argc, char* argv[])
         
 
         // Configuration file path
-        std::string configPath = "config/realtime.cfg";
+        std::string configPath = "config/accurate.cfg";
 
         if (argc == 3 && std::string(argv[1]) == "--config")
         {
@@ -59,20 +60,40 @@ int main(int argc, char* argv[])
         if (app.mode == "realtime")
         {
             RealtimeSimulationRunner::run(app.port, app.baudRate, "unused.csv", "unused_performance.csv", 
-                mesh, ue, material, boundaryConditions, config, initialTemperature, centerNodeId, app.maxSteps);
+                mesh, ue, material, boundaryConditions, config, initialTemperature, centerNodeId, app.maxSteps, app, configPath);
         }
         else if (app.mode == "accurate")
         {
 
+            if (!std::filesystem::is_regular_file(app.measurementFile))
+            {
+                throw std::runtime_error("Measurement file not found: " + app.measurementFile);
+            }
+
             const auto sessionDir = SessionManager::createSessionDirectory();
+
+            SessionMetadata::writeInitial(sessionDir, app, configPath);
 
             const auto outputFile = (sessionDir / "simulation.csv").string();
 
             std::cout << "Accurate session directory: "
                 << sessionDir.string() << '\n';
 
-            ReplaySimulationRunner::run(app.measurementFile, outputFile, 
-                mesh, ue, material, boundaryConditions, config, initialTemperature, centerNodeId, app.accurateTimeStep);
+
+            try
+            {
+                const ReplaySummary summary = ReplaySimulationRunner::run(app.measurementFile, outputFile, mesh, ue, material, 
+                    boundaryConditions, config, initialTemperature, centerNodeId, app.accurateTimeStep);
+
+                SessionMetadata::writeFinal(sessionDir, "completed", summary.completedSteps, summary.simulationTime);
+            }
+            catch (const std::exception&)
+            {
+                SessionMetadata::writeFinal(sessionDir, "failed", 0, 0.0);
+
+                throw;
+            }
+
         }
 
         std::cout << "Simulation completed.\n";

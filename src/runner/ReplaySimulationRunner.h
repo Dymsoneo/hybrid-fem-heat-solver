@@ -9,9 +9,18 @@
 #include "../config/SimulationConfig.h"
 
 
+
+struct ReplaySummary
+{
+    int completedSteps = 0;
+    int femSteps = 0;
+    double simulationTime = 0.0;
+};
+
+
 class ReplaySimulationRunner
 {
 public:
-	static void run(const std::string& measurementFile, const std::string& outputFile, const Mesh& mesh, const UniversalElement& ue, const MaterialModel& material, const BoundaryConditionManager& boundaryConditions,
+	static ReplaySummary run(const std::string& measurementFile, const std::string& outputFile, const Mesh& mesh, const UniversalElement& ue, const MaterialModel& material, const BoundaryConditionManager& boundaryConditions,
 		const SimulationConfig& config, const std::vector<double>& initialTemperature, int centerNodeId, double maxTimeStep);
 };

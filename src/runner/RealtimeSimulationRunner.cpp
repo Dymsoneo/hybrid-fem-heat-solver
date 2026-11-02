@@ -17,14 +17,14 @@
 #include "../io/RealtimePerformanceLogger.h"
 #include "../io/ExperimentLogger.h"
 #include "../io/SessionManager.h"
-
+#include "../io/SessionMetadata.h"
 
 
 
 
 
 void RealtimeSimulationRunner::run(const std::string& portName, int baudRate, const std::string& outputFile, const std::string& performanceOutputFile, const Mesh& mesh,
-	const UniversalElement& ue, const MaterialModel& material, const BoundaryConditionManager& boundaryConditions, const SimulationConfig& config, const std::vector<double>& initialTemperature, int centerNodeId, int maxSteps)
+	const UniversalElement& ue, const MaterialModel& material, const BoundaryConditionManager& boundaryConditions, const SimulationConfig& config, const std::vector<double>& initialTemperature, int centerNodeId, int maxSteps, const AppConfig& app, const std::string& configPath)
 {
     if (maxSteps <= 0)
     {
@@ -53,105 +53,124 @@ void RealtimeSimulationRunner::run(const std::string& portName, int baudRate, co
 
     const auto sessionDir = SessionManager::createSessionDirectory();
 
-    SimulationLogger logger((sessionDir / "simulation.csv").string());
-
-    RealtimePerformanceLogger performanceLogger((sessionDir / "performance.csv").string());
-
-    ExperimentLogger experimentLogger((sessionDir / "acquisition.csv").string(), ExperimentLogFormat::Acquisition);
-
-    std::cout << "Session directory: " << sessionDir.string() << '\n';
-
-
-    std::vector<double> currentTemperature = initialTemperature;
-
-    MeasurementSample previousSample = serialReader.readSample();
-    experimentLogger.logSample(previousSample);
-
+	SessionMetadata::writeInitial(sessionDir, app, configPath);
+    int completedSteps = 0;
     double currentTime = 0.0;
+    bool stoppedByUser = false;
+    try {
 
-    double initialTMin = *std::min_element(currentTemperature.begin(), currentTemperature.end());
 
-    double initialTMax = *std::max_element(currentTemperature.begin(), currentTemperature.end());
+        
 
-    logger.logStep(currentTime, previousSample.temperatureC, currentTemperature[centerNodeId], initialTMin, initialTMax);
+        SimulationLogger logger((sessionDir / "simulation.csv").string());
 
-    std::cout << "Initial furnace temperature: " << previousSample.temperatureC << " C\n";
+        RealtimePerformanceLogger performanceLogger((sessionDir / "performance.csv").string());
 
-    for (int step = 1; step <= maxSteps; ++step)
-    {
+        ExperimentLogger experimentLogger((sessionDir / "acquisition.csv").string(), ExperimentLogFormat::Acquisition);
 
-        if (_kbhit())
+        std::cout << "Session directory: " << sessionDir.string() << '\n';
+
+
+        std::vector<double> currentTemperature = initialTemperature;
+
+        MeasurementSample previousSample = serialReader.readSample();
+        experimentLogger.logSample(previousSample);
+
+
+
+        double initialTMin = *std::min_element(currentTemperature.begin(), currentTemperature.end());
+
+        double initialTMax = *std::max_element(currentTemperature.begin(), currentTemperature.end());
+
+        logger.logStep(currentTime, previousSample.temperatureC, currentTemperature[centerNodeId], initialTMin, initialTMax);
+
+        std::cout << "Initial furnace temperature: " << previousSample.temperatureC << " C\n";
+
+        for (int step = 1; step <= maxSteps; ++step)
         {
-            const int key = _getch();
 
-            if (key == 'q' || key == 'Q')
+            if (_kbhit())
             {
-                std::cout << "\nExperiment stopped by user.\n";
-                break;
+                const int key = _getch();
+
+                if (key == 'q' || key == 'Q')
+                {
+                    stoppedByUser = true;
+                    std::cout << "\nExperiment stopped by user.\n";
+                    break;
+                }
             }
+
+            MeasurementSample sample = serialReader.readSample();
+            experimentLogger.logSample(sample);
+
+            if (sample.sampleId != previousSample.sampleId + 1)
+            {
+                throw std::runtime_error(
+                    "Missing or out-of-order measurement sample");
+            }
+
+            const std::uint32_t deltaMs = sample.arduinoTimeMs - previousSample.arduinoTimeMs;
+
+            const double dt = deltaMs / 1000.0;
+
+            if (dt <= 0.0 || dt > 2.0)
+            {
+                throw std::runtime_error(
+                    "Invalid measurement time interval");
+            }
+
+            const double furnaceTemperature = sample.temperatureC;
+
+            const auto startTime = std::chrono::steady_clock::now();
+
+            auto stepResult = TimeIntegrator::stepNonLinearWithHTC(mesh, ue, material, currentTemperature, dt, boundaryConditions, furnaceTemperature, config.maxPicardIterations, config.picardTolerance);
+
+            const auto endTime = std::chrono::steady_clock::now();
+
+            const double computeTimeMs = std::chrono::duration<double, std::milli>(endTime - startTime).count();
+
+            const double computeTimeSeconds = computeTimeMs / 1000.0;
+
+            const double realtimeFactor = computeTimeSeconds > 0.0 ? dt / computeTimeSeconds : 0.0;
+
+            const bool deadlineMissed = computeTimeSeconds > dt;
+
+            currentTemperature = std::move(stepResult.temperature);
+            currentTime += dt;
+
+            const double tMin = *std::min_element(currentTemperature.begin(), currentTemperature.end());
+
+            const double tMax = *std::max_element(currentTemperature.begin(), currentTemperature.end());
+
+            logger.logStep(currentTime, furnaceTemperature, currentTemperature[centerNodeId], tMin, tMax);
+
+            performanceLogger.logStep(step, currentTime, computeTimeMs, stepResult.stats.iterations, realtimeFactor, deadlineMissed);
+
+            std::cout
+                << "Step " << step
+                << " | time = " << currentTime
+                << " s | dt = " << dt
+                << " s | furnace = " << furnaceTemperature
+                << " C | center = " << currentTemperature[centerNodeId]
+                << " C | Picard iters = " << stepResult.stats.iterations
+                << " | compute = " << computeTimeMs
+                << " ms | RTF = " << realtimeFactor
+                << (deadlineMissed ? " | Deadline missed!" : "")
+                << '\n';
+
+            previousSample = sample;
+
+            completedSteps = step;
         }
 
-        MeasurementSample sample = serialReader.readSample();
-        experimentLogger.logSample(sample);
-
-        if (sample.sampleId != previousSample.sampleId + 1)
-        {
-            throw std::runtime_error(
-                "Missing or out-of-order measurement sample");
-        }
-
-        const std::uint32_t deltaMs = sample.arduinoTimeMs - previousSample.arduinoTimeMs;
-
-        const double dt = deltaMs / 1000.0;
-
-        if (dt <= 0.0 || dt > 2.0)
-        {
-            throw std::runtime_error(
-                "Invalid measurement time interval");
-        }
-
-        const double furnaceTemperature = sample.temperatureC;
-
-        const auto startTime = std::chrono::steady_clock::now();
-
-        auto stepResult = TimeIntegrator::stepNonLinearWithHTC(mesh, ue, material, currentTemperature, dt, boundaryConditions, furnaceTemperature, config.maxPicardIterations, config.picardTolerance);
-
-        const auto endTime = std::chrono::steady_clock::now();
-
-        const double computeTimeMs = std::chrono::duration<double, std::milli>(endTime - startTime).count();
-
-        const double computeTimeSeconds = computeTimeMs / 1000.0;
-
-        const double realtimeFactor = computeTimeSeconds > 0.0 ? dt / computeTimeSeconds : 0.0;
-
-        const bool deadlineMissed = computeTimeSeconds > dt;
-
-        currentTemperature = std::move(stepResult.temperature);
-        currentTime += dt;
-
-        const double tMin = *std::min_element(currentTemperature.begin(), currentTemperature.end());
-
-        const double tMax = *std::max_element(currentTemperature.begin(), currentTemperature.end());
-
-        logger.logStep(currentTime, furnaceTemperature, currentTemperature[centerNodeId], tMin, tMax);
-
-        performanceLogger.logStep(step, currentTime, computeTimeMs, stepResult.stats.iterations, realtimeFactor, deadlineMissed);
-
-        std::cout
-            << "Step " << step
-            << " | time = " << currentTime
-            << " s | dt = " << dt
-            << " s | furnace = " << furnaceTemperature
-            << " C | center = " << currentTemperature[centerNodeId]
-            << " C | Picard iters = " << stepResult.stats.iterations
-            << " | compute = " << computeTimeMs
-            << " ms | RTF = " << realtimeFactor
-            << (deadlineMissed ? " | Deadline missed!" : "")
-            << '\n';
-
-        previousSample = sample;
-    }
-
+        SessionMetadata::writeFinal(sessionDir, stoppedByUser ? "stopped" : "completed", completedSteps, currentTime);
+	}
+	catch (const std::exception& e)
+	{
+		SessionMetadata::writeFinal(sessionDir, "failed", completedSteps, 0.0);
+		throw;
+	}
     std::cout << "\nRealtime session finished.\n";
     std::cout << "Simulation time: " << currentTime << " s\n";
     std::cout << "Results saved.\n";

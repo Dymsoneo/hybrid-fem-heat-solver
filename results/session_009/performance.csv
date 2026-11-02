@@ -1,0 +1,4 @@
+step,simulation_time_s,compute_time_ms,picard_iterations,realtime_speedup,deadline_missed
+1,0.500000,5.345800,2,93.531370,0
+2,1.000000,10.836000,2,46.142488,0
+3,1.500000,12.789400,2,39.094875,0
