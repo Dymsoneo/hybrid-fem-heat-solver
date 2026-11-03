@@ -23,8 +23,8 @@
 
 
 
-void RealtimeSimulationRunner::run(const std::string& portName, int baudRate, const std::string& outputFile, const std::string& performanceOutputFile, const Mesh& mesh,
-	const UniversalElement& ue, const MaterialModel& material, const BoundaryConditionManager& boundaryConditions, const SimulationConfig& config, const std::vector<double>& initialTemperature, int centerNodeId, int maxSteps, const AppConfig& app, const std::string& configPath)
+void RealtimeSimulationRunner::run(const std::string& portName, int baudRate, const Mesh& mesh, const UniversalElement& ue, const MaterialModel& material, const BoundaryConditionManager& boundaryConditions,
+    const SimulationConfig& config, const std::vector<double>& initialTemperature, int centerNodeId, int maxSteps, const AppConfig& app, const std::string& configPath)
 {
     if (maxSteps <= 0)
     {
@@ -168,8 +168,16 @@ void RealtimeSimulationRunner::run(const std::string& portName, int baudRate, co
 	}
 	catch (const std::exception& e)
 	{
-		SessionMetadata::writeFinal(sessionDir, "failed", completedSteps, 0.0);
-		throw;
+        try
+        {
+            SessionMetadata::writeFinal(sessionDir, "failed", completedSteps, currentTime);
+        }
+        catch (const std::exception& metadataError)
+        {
+            std::cerr << "Warning: Could not update session metadata: " << metadataError.what() << '\n';
+        }
+
+        throw;
 	}
     std::cout << "\nRealtime session finished.\n";
     std::cout << "Simulation time: " << currentTime << " s\n";

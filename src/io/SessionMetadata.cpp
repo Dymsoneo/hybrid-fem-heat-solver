@@ -79,7 +79,7 @@ void SessionMetadata::writeInitial(const std::filesystem::path& sessionDir, cons
 }
 
 
-void SessionMetadata::writeFinal(const std::filesystem::path& sessionDir, const std::string& status, int completedSteps, double simulationTime)
+void SessionMetadata::writeFinal(const std::filesystem::path& sessionDir, const std::string& status, int completedSteps, double simulationTime, int femSteps)
 {
     const auto filePath = sessionDir / "session_info.txt";
 
@@ -127,6 +127,11 @@ void SessionMetadata::writeFinal(const std::filesystem::path& sessionDir, const 
     output << "\nend_time=" << std::put_time(&localTime, "%Y-%m-%d %H:%M:%S") << '\n';
     output << "completed_steps=" << completedSteps << '\n';
     output << "simulation_time_s=" << simulationTime << '\n';
+
+    if (femSteps >= 0)
+    {
+        output << "fem_steps=" << femSteps << '\n';
+    }
 
     if (!output)
     {

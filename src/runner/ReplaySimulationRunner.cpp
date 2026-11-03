@@ -10,16 +10,18 @@
 #include "../io/SimulationLogger.h"
 #include "../solver/TimeIntegrator.h"
 
-ReplaySummary ReplaySimulationRunner::run(const std::string& measurementFile, const std::string& outputFile, const Mesh& mesh, const UniversalElement& ue, const MaterialModel& material, const BoundaryConditionManager& boundaryConditions, 
-	const SimulationConfig& config, const std::vector<double>& initialTemperature, int centerNodeId, double maxTimeStep)
+void ReplaySimulationRunner::run(const std::string& measurementFile, const std::string& outputFile, const Mesh& mesh, const UniversalElement& ue, const MaterialModel& material, const BoundaryConditionManager& boundaryConditions, 
+	const SimulationConfig& config, const std::vector<double>& initialTemperature, int centerNodeId, double maxTimeStep, ReplaySummary& summary)
 {
+
+    
 
 	if (!std::isfinite(maxTimeStep) || maxTimeStep <= 0.0)
 	{
 		throw std::runtime_error("Maximum time step must be positive and finite.");
 	}
 
-    ReplaySummary summary;
+    summary = ReplaySummary{};
 
 	MeasurementReader reader(measurementFile);
 	SimulationLogger logger(outputFile);
@@ -90,5 +92,5 @@ ReplaySummary ReplaySimulationRunner::run(const std::string& measurementFile, co
         previousSample = sample;
     }
 
-	return summary;
+	
 }

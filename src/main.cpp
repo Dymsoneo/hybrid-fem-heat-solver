@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
         // Realtime simulation
         if (app.mode == "realtime")
         {
-            RealtimeSimulationRunner::run(app.port, app.baudRate, "unused.csv", "unused_performance.csv", 
+            RealtimeSimulationRunner::run(app.port, app.baudRate,
                 mesh, ue, material, boundaryConditions, config, initialTemperature, centerNodeId, app.maxSteps, app, configPath);
         }
         else if (app.mode == "accurate")
@@ -76,20 +76,28 @@ int main(int argc, char* argv[])
 
             const auto outputFile = (sessionDir / "simulation.csv").string();
 
-            std::cout << "Accurate session directory: "
-                << sessionDir.string() << '\n';
+            std::cout << "Accurate session directory: " << sessionDir.string() << '\n';
 
+
+            ReplaySummary summary;
 
             try
             {
-                const ReplaySummary summary = ReplaySimulationRunner::run(app.measurementFile, outputFile, mesh, ue, material, 
-                    boundaryConditions, config, initialTemperature, centerNodeId, app.accurateTimeStep);
+                ReplaySimulationRunner::run(app.measurementFile, outputFile, mesh, ue, material, 
+                    boundaryConditions, config, initialTemperature, centerNodeId, app.accurateTimeStep, summary);
 
-                SessionMetadata::writeFinal(sessionDir, "completed", summary.completedSteps, summary.simulationTime);
+                SessionMetadata::writeFinal(sessionDir, "completed", summary.completedSteps, summary.simulationTime, summary.femSteps);
             }
-            catch (const std::exception&)
+            catch (const std::exception& e)
             {
-                SessionMetadata::writeFinal(sessionDir, "failed", 0, 0.0);
+                try
+                {
+                    SessionMetadata::writeFinal(sessionDir, "failed", summary.completedSteps, summary.simulationTime, summary.femSteps);
+                }
+                catch (const std::exception& metadataError)
+                {
+                    std::cerr << "Warning: Could not update session metadata: " << metadataError.what() << '\n';
+                }
 
                 throw;
             }
