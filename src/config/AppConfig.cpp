@@ -137,7 +137,11 @@ AppConfig loadAppConfig(const std::string& filePath)
         config.initialTemperature = parseDouble(get("initial_temperature"));
 
         config.materialFile = get("material_file");
-        config.htcFile = get("htc_file");
+        config.bcRight = get("bc_right");
+        config.bcTop = get("bc_top");
+        config.bcBottom = get("bc_bottom");
+
+        
     }
     catch (const std::exception& e)
     {
@@ -156,6 +160,42 @@ AppConfig loadAppConfig(const std::string& filePath)
     {
         throw std::runtime_error("Configuration contains invalid non-positive parameters.");
     }
+
+
+    auto configureHTC = [&](const std::string& side, const std::string& type, double& value, std::string& file)
+        {
+            if (type == "constant")
+            {
+                value = parseDouble(get("htc_" + side + "_value"));
+
+                if (value <= 0.0)
+                {
+                    throw std::runtime_error("HTC must be positive for side: " + side);
+                }
+            }
+            else if (type == "table")
+            {
+                file = get("htc_" + side + "_file");
+            }
+            else if (type != "insulated")
+            {
+                throw std::runtime_error("Invalid boundary condition for side: " + side + ". Allowed: table, constant, insulated.");
+            }
+        };
+
+    try
+    {
+        configureHTC("right", config.bcRight, config.htcRightValue, config.htcRightFile);
+
+        configureHTC("top", config.bcTop, config.htcTopValue, config.htcTopFile);
+
+        configureHTC("bottom", config.bcBottom, config.htcBottomValue, config.htcBottomFile);
+    }
+    catch (const std::exception& e)
+    {
+        throw std::runtime_error("Invalid boundary configuration: " + std::string(e.what()));
+    }
+
 
     return config;
 }

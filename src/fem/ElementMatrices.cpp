@@ -14,16 +14,12 @@ double ElementMatrices::computeRadiusAtGaussPoint(const Element& element, const 
     return r;
 }
 
-bool ElementMatrices::isBoundaryEdge(const Element& element, const Mesh& mesh, int edgeIndex)
+
+bool ElementMatrices::isBoundaryEdge(
+    const Element& element,
+    const Mesh& mesh,
+    int edgeIndex)
 {
-    // Local edge numbering for Q4 element:
-    // edge 0 -> nodes (0,1) bottom
-    // edge 1 -> nodes (1,2) right
-    // edge 2 -> nodes (2,3) top
-    // edge 3 -> nodes (3,0) left
-
-    // if both nodes of the edge are boundary nodes then the edge belongs to the boundary
-
     int firstNodeIndex = 0;
     int secondNodeIndex = 0;
 
@@ -31,7 +27,7 @@ bool ElementMatrices::isBoundaryEdge(const Element& element, const Mesh& mesh, i
     {
     case 0:
         firstNodeIndex = 0;
-        secondNodeIndex = 1; 
+        secondNodeIndex = 1;
         break;
     case 1:
         firstNodeIndex = 1;
@@ -52,8 +48,39 @@ bool ElementMatrices::isBoundaryEdge(const Element& element, const Mesh& mesh, i
     const Node& n1 = mesh.nodes[element.nodeIds[firstNodeIndex]];
     const Node& n2 = mesh.nodes[element.nodeIds[secondNodeIndex]];
 
-    return n1.isBoundary && n2.isBoundary;
+    if (!n1.isBoundary || !n2.isBoundary)
+        return false;
+
+    constexpr double tolerance = 1e-10;
+
+    if (edgeIndex == 0 || edgeIndex == 2)
+    {
+        // Horizontal edge: both nodes must lie on z = 0 or z = H
+        if (std::abs(n1.z - n2.z) > tolerance)
+            return false;
+
+        // The edge must be on the outer boundary,
+        // not merely connect two boundary nodes.
+        const double zMin = mesh.nodes.front().z;
+        const double zMax = mesh.nodes.back().z;
+
+        return std::abs(n1.z - zMin) < tolerance ||
+            std::abs(n1.z - zMax) < tolerance;
+    }
+
+    // Vertical edge: both nodes must lie on r = 0 or r = R
+    if (std::abs(n1.r - n2.r) > tolerance)
+        return false;
+
+    double rMax = 0.0;
+
+    for (const Node& node : mesh.nodes)
+        rMax = std::max(rMax, node.r);
+
+    return std::abs(n1.r) < tolerance ||
+        std::abs(n1.r - rMax) < tolerance;
 }
+
 
 double ElementMatrices::computeEdgeDetJ(const Element& element, const Mesh& mesh, int edgeIndex)
 {

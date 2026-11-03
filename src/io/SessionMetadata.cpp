@@ -46,8 +46,32 @@ void SessionMetadata::writeInitial(const std::filesystem::path& sessionDir, cons
     file << "density_kg_m3=" << app.density << '\n';
     file << "material_file=" << app.materialFile << '\n';
 
+
     file << "\n[boundary_conditions]\n";
-    file << "htc_file=" << app.htcFile << '\n';
+
+    auto writeBoundary = [&](const std::string& side,
+        const std::string& type,
+        double htcValue,
+        const std::string& htcFile)
+        {
+            file << "bc_" << side << "=" << type << '\n';
+
+            if (type == "constant")
+            {
+                file << "htc_" << side << "_value=" << htcValue << '\n';
+            }
+            else if (type == "table")
+            {
+                file << "htc_" << side << "_file=" << htcFile << '\n';
+            }
+        };
+
+    writeBoundary("right", app.bcRight, app.htcRightValue, app.htcRightFile);
+
+    writeBoundary("top", app.bcTop, app.htcTopValue, app.htcTopFile);
+
+    writeBoundary("bottom", app.bcBottom, app.htcBottomValue, app.htcBottomFile);
+
 
     file << "\n[solver]\n";
     file << "initial_temperature_c=" << app.initialTemperature << '\n';

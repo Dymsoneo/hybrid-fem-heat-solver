@@ -43,13 +43,29 @@ int main(int argc, char* argv[])
         MaterialModel material(app.density, app.materialFile);
 
         // Boundary conditions
+        
         BoundaryConditionManager boundaryConditions;
 
-        HTCModel furnaceHTC(app.htcFile);
+        auto configureBoundary = [&](BoundarySide side, const std::string& type, double htcValue, const std::string& htcFile)
+            {
+                if (type == "constant")
+                {
+                    boundaryConditions.setHTCModel(side, HTCModel(htcValue));
+                }
+                else if (type == "table")
+                {
+                    boundaryConditions.setHTCModel(side, HTCModel(htcFile));
+                }
+                // insulated: no HTC model assigned
+            };
 
-        boundaryConditions.setHTCModel(BoundarySide::Right, furnaceHTC);
+        configureBoundary(BoundarySide::Right, app.bcRight, app.htcRightValue, app.htcRightFile);
 
-        boundaryConditions.setHTCModel(BoundarySide::Top, furnaceHTC);
+        configureBoundary(BoundarySide::Top, app.bcTop, app.htcTopValue, app.htcTopFile);
+
+        configureBoundary(BoundarySide::Bottom, app.bcBottom, app.htcBottomValue, app.htcBottomFile);
+
+
 
         // Initial condition
         std::vector<double> initialTemperature(mesh.nodes.size(), app.initialTemperature);

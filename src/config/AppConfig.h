@@ -22,8 +22,17 @@ struct AppConfig
     std::string materialFile =
         "data/materials/magnesium_alloy.csv";
 
-    std::string htcFile =
-        "data/boundary/htc_effective.csv";
+    std::string bcRight = "table";
+    std::string bcTop = "table";
+    std::string bcBottom = "insulated";
+
+    double htcRightValue = 100.0;
+    double htcTopValue = 100.0;
+    double htcBottomValue = 100.0;
+
+    std::string htcRightFile = "data/boundary/htc_effective.csv";
+    std::string htcTopFile = "data/boundary/htc_effective.csv";
+    std::string htcBottomFile = "data/boundary/htc_effective.csv";
 
     std::string mode = "realtime";
     std::string measurementFile = "";
