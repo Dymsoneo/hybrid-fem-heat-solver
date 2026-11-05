@@ -9,6 +9,7 @@
 #include "../io/MeasurementReader.h"
 #include "../io/SimulationLogger.h"
 #include "../solver/TimeIntegrator.h"
+#include "../io/ConsoleReporter.h"
 
 void ReplaySimulationRunner::run(const std::string& measurementFile, const std::string& outputFile, const Mesh& mesh, const UniversalElement& ue, const MaterialModel& material, const BoundaryConditionManager& boundaryConditions, 
 	const SimulationConfig& config, const std::vector<double>& initialTemperature, int centerNodeId, double maxTimeStep, ReplaySummary& summary)
@@ -33,9 +34,14 @@ void ReplaySimulationRunner::run(const std::string& measurementFile, const std::
 		throw std::runtime_error("No measurement data found.");
 	}
 
+    ConsoleReporter::printHeader("ACCURATE", config.radialElements, config.axialElements);
+
+    std::cout << "Maximum internal FEM dt: " << maxTimeStep << " s\n";
+    std::cout << "Measurement file: " << measurementFile << "\n\n";
+
 	MeasurementSample initialSample = reader.next();
 
-	
+    summary.finalCenterTemperature = currentTemperature[centerNodeId];
 
 	double initalTMin = *std::min_element(currentTemperature.begin(), currentTemperature.end());
 	double initalTMax = *std::max_element(currentTemperature.begin(), currentTemperature.end());
@@ -45,6 +51,8 @@ void ReplaySimulationRunner::run(const std::string& measurementFile, const std::
 
 
     MeasurementSample previousSample = initialSample;
+
+    ConsoleReporter::printAccurateStepHeader();
 
     while (reader.hasNext())
     {
@@ -88,6 +96,10 @@ void ReplaySimulationRunner::run(const std::string& measurementFile, const std::
 
         ++summary.completedSteps;
         summary.simulationTime = sample.timeSeconds - initialSample.timeSeconds;
+
+        summary.finalCenterTemperature = currentTemperature[centerNodeId];
+
+        ConsoleReporter::printAccurateStep(summary.completedSteps, summary.simulationTime, sample.furnaceTemperature, currentTemperature[centerNodeId], substeps);
 
         previousSample = sample;
     }

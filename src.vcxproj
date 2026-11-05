@@ -27,6 +27,7 @@
     <ClCompile Include="src\fem\ElementMatrices.cpp" />
     <ClCompile Include="src\fem\Jacobian.cpp" />
     <ClCompile Include="src\fem\UniversalElement.cpp" />
+    <ClCompile Include="src\io\ConsoleReporter.cpp" />
     <ClCompile Include="src\io\ExperimentLogger.cpp" />
     <ClCompile Include="src\io\MeasurementReader.cpp" />
     <ClCompile Include="src\io\RealtimePerformanceLogger.cpp" />
@@ -57,6 +58,7 @@
     <ClInclude Include="src\fem\ElementMatrices.h" />
     <ClInclude Include="src\fem\Jacobian.h" />
     <ClInclude Include="src\fem\UniversalElement.h" />
+    <ClInclude Include="src\io\ConsoleReporter.h" />
     <ClInclude Include="src\io\ExperimentLogger.h" />
     <ClInclude Include="src\io\MeasurementReader.h" />
     <ClInclude Include="src\io\MeasurementSample.h" />

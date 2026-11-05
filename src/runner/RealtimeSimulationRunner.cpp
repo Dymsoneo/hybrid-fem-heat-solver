@@ -50,6 +50,8 @@ void RealtimeSimulationRunner::run(const std::string& portName, int baudRate, co
     std::cout << "Experiment started.\n";
     std::cout << "Press Q to stop after the current step.\n\n";
 
+    ConsoleReporter::printHeader("REALTIME", config.radialElements, config.axialElements, portName, baudRate);
+
 
     const auto sessionDir = SessionManager::createSessionDirectory();
 
@@ -57,6 +59,9 @@ void RealtimeSimulationRunner::run(const std::string& portName, int baudRate, co
     int completedSteps = 0;
     double currentTime = 0.0;
     bool stoppedByUser = false;
+
+    std::vector<double> currentTemperature = initialTemperature;
+
     try {
 
 
@@ -71,7 +76,7 @@ void RealtimeSimulationRunner::run(const std::string& portName, int baudRate, co
         std::cout << "Session directory: " << sessionDir.string() << '\n';
 
 
-        std::vector<double> currentTemperature = initialTemperature;
+        
 
         MeasurementSample previousSample = serialReader.readSample();
         experimentLogger.logSample(previousSample);
@@ -85,6 +90,9 @@ void RealtimeSimulationRunner::run(const std::string& portName, int baudRate, co
         logger.logStep(currentTime, previousSample.temperatureC, currentTemperature[centerNodeId], initialTMin, initialTMax);
 
         std::cout << "Initial furnace temperature: " << previousSample.temperatureC << " C\n";
+
+        std::cout << '\n';
+        ConsoleReporter::printStepHeader();
 
         for (int step = 1; step <= maxSteps; ++step)
         {
@@ -147,17 +155,7 @@ void RealtimeSimulationRunner::run(const std::string& portName, int baudRate, co
 
             performanceLogger.logStep(step, currentTime, computeTimeMs, stepResult.stats.iterations, realtimeFactor, deadlineMissed);
 
-            std::cout
-                << "Step " << step
-                << " | time = " << currentTime
-                << " s | dt = " << dt
-                << " s | furnace = " << furnaceTemperature
-                << " C | center = " << currentTemperature[centerNodeId]
-                << " C | Picard iters = " << stepResult.stats.iterations
-                << " | compute = " << computeTimeMs
-                << " ms | RTF = " << realtimeFactor
-                << (deadlineMissed ? " | Deadline missed!" : "")
-                << '\n';
+            ConsoleReporter::printStep(step, currentTime, furnaceTemperature, currentTemperature[centerNodeId], realtimeFactor, deadlineMissed);
 
             previousSample = sample;
 
@@ -179,7 +177,5 @@ void RealtimeSimulationRunner::run(const std::string& portName, int baudRate, co
 
         throw;
 	}
-    std::cout << "\nRealtime session finished.\n";
-    std::cout << "Simulation time: " << currentTime << " s\n";
-    std::cout << "Results saved.\n";
+    ConsoleReporter::printSummary(stoppedByUser ? "STOPPED" : "COMPLETED", completedSteps, currentTime, currentTemperature[centerNodeId], sessionDir.string());
 }

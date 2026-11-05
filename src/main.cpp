@@ -10,6 +10,7 @@
 #include "io/SessionMetadata.h"
 #include "runner/ReplaySimulationRunner.h"
 #include "io/SessionManager.h"
+#include "io/ConsoleReporter.h"
 
 int main(int argc, char* argv[])
 {
@@ -103,6 +104,8 @@ int main(int argc, char* argv[])
                     boundaryConditions, config, initialTemperature, centerNodeId, app.accurateTimeStep, summary);
 
                 SessionMetadata::writeFinal(sessionDir, "completed", summary.completedSteps, summary.simulationTime, summary.femSteps);
+
+                ConsoleReporter::printSummary("COMPLETED", summary.completedSteps, summary.simulationTime, summary.finalCenterTemperature, sessionDir.string(), summary.femSteps);
             }
             catch (const std::exception& e)
             {

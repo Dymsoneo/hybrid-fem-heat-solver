@@ -9,6 +9,7 @@
 #include "../boundary/BoundaryConditionManager.h"
 #include "../config/SimulationConfig.h"
 #include "../config/AppConfig.h"
+#include "../io/ConsoleReporter.h"
 
 
 class RealtimeSimulationRunner

@@ -15,6 +15,7 @@ struct ReplaySummary
     int completedSteps = 0;
     int femSteps = 0;
     double simulationTime = 0.0;
+    double finalCenterTemperature = 0.0;
 };
 
 
